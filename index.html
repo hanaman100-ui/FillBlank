@@ -6,7 +6,7 @@
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="default" />
   <meta name="theme-color" content="#3B82F6" />
-  <title>DET Fill in the Blank</title>
+  <title>DET Fill in the Blanks</title>
   <style>
     :root {
       --blue:   #3B82F6;
@@ -77,6 +77,91 @@
       line-height: 1.8;
       text-align: left;
       width: 100%;
+    }
+
+    /* ── HOME type badge ──────────────────────────────────────────────────── */
+    .type-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #EFF6FF;
+      border: 1.5px solid #BFDBFE;
+      border-radius: 999px;
+      padding: 6px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--blue);
+    }
+
+    /* ── HOME stat grid ───────────────────────────────────────────────────── */
+    .stat-grid {
+      display: flex;
+      width: 100%;
+      gap: 8px;
+    }
+    .stat-item {
+      flex: 1;
+      background: var(--panel);
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 8px;
+      text-align: center;
+    }
+    .stat-val {
+      font-size: 18px;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .stat-lbl {
+      font-size: 11px;
+      color: var(--dim);
+      margin-top: 3px;
+    }
+
+    /* ── HOME strategy / mistakes ─────────────────────────────────────────── */
+    .tip-box {
+      width: 100%;
+      border-radius: 12px;
+      padding: 14px 16px;
+      text-align: left;
+    }
+    .tip-box.strategy {
+      background: #FFFBEB;
+      border: 1.5px solid #FDE68A;
+    }
+    .tip-box.mistakes {
+      background: #FFF7ED;
+      border: 1.5px solid #FED7AA;
+    }
+    .tip-title {
+      font-size: 13px;
+      font-weight: 800;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .tip-box.strategy .tip-title { color: #92400E; }
+    .tip-box.mistakes .tip-title { color: #C2410C; }
+    .tip-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+    .tip-list li {
+      font-size: 13px;
+      line-height: 1.55;
+      padding-left: 14px;
+      position: relative;
+    }
+    .tip-box.strategy .tip-list li { color: #78350F; }
+    .tip-box.mistakes .tip-list li { color: #9A3412; }
+    .tip-list li::before {
+      content: '•';
+      position: absolute;
+      left: 0;
     }
 
     .btn-row { display: flex; gap: 10px; width: 100%; }
@@ -364,19 +449,42 @@
 
 <!-- ── HOME ──────────────────────────────────────────────────────────────── -->
 <div id="home" class="screen">
-  <p style="font-size:1.05rem; font-weight:700; color:#E11D48; text-align:center; margin-bottom:4px;">예은아, DET 합격까지 화이팅! 💕</p>
-  <h1>DET Fill in the Blank</h1>
-  <p class="sub">Duolingo English Test · Fill in the Blank</p>
+  <p style="font-size:1.05rem; font-weight:700; color:#7C3AED; text-align:center; margin-bottom:4px;">✨ 예은이를 응원해! 화이팅 ✨</p>
+  <h1>Fill in the Blanks</h1>
+  <p class="sub">Duolingo English Test · Literacy · Comprehension</p>
+  <div class="type-badge">📝 유형 2 — Fill in the Blanks</div>
   <div class="divider"></div>
   <p class="desc">
     문장 속 단어의 <strong>빈 글자</strong>를 채워보세요.<br>
     초록 박스는 힌트, 흰 박스에 한 글자씩 입력합니다.
   </p>
-  <div class="hint-box">
-    ⏱ 제한 시간: <strong style="color:#374151">20초</strong> / 문제<br>
-    📝 총 421문제 중 랜덤 10문제 출제<br>
-    ✏️ 각 칸에 글자 입력 → Enter 또는 확인 버튼<br>
-    📋 10문제 완료 후 전체 결과 리뷰 가능
+  <div class="stat-grid">
+    <div class="stat-item">
+      <div class="stat-val">20초</div>
+      <div class="stat-lbl">제한 시간</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">6~9문제</div>
+      <div class="stat-lbl">실전 출제</div>
+    </div>
+    <div class="stat-item">
+      <div class="stat-val">1문장</div>
+      <div class="stat-lbl">문제당 문장</div>
+    </div>
+  </div>
+  <div class="tip-box strategy">
+    <div class="tip-title">💡 핵심 전략</div>
+    <ul class="tip-list">
+      <li>전체 문장 읽고 문맥 파악 먼저 → 품사 자리(명사/동사/형용사) 확인 후 힌트 알파벳 매칭</li>
+      <li>20초는 생각보다 짧으므로 시간 체크 필수</li>
+    </ul>
+  </div>
+  <div class="tip-box mistakes">
+    <div class="tip-title">⚠️ 흔한 실수</div>
+    <ul class="tip-list">
+      <li>힌트 알파벳에만 집중해 문맥 무시</li>
+      <li>시간 초과로 빈칸 미제출</li>
+    </ul>
   </div>
   <button class="btn-start" onclick="startQuiz()">시  작</button>
 </div>
