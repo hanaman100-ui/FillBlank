@@ -1,0 +1,2543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="theme-color" content="#3B82F6" />
+  <title>DET Fill in the Blank</title>
+  <style>
+    :root {
+      --blue:   #3B82F6;
+      --blue-d: #2563EB;
+      --orange: #F59E0B;
+      --red:    #EF4444;
+      --green:  #10B981;
+      --text:   #111827;
+      --dim:    #9CA3AF;
+      --border: #E5E7EB;
+      --panel:  #F9FAFB;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #fff;
+      color: var(--text);
+    }
+
+    .screen {
+      position: fixed;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .screen.hidden { display: none; }
+
+    @media (min-width: 520px) {
+      .screen {
+        max-width: 480px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-left:  1px solid var(--border);
+        border-right: 1px solid var(--border);
+      }
+    }
+
+    /* ── HOME ─────────────────────────────────────────────────────────────── */
+    #home {
+      overflow-y: auto;
+      justify-content: flex-start;
+      text-align: center;
+      padding: 40px 28px 36px;
+      gap: 12px;
+    }
+    #home h1 { font-size: 34px; font-weight: 800; letter-spacing: -1px; }
+    .sub  { color: var(--dim); font-size: 14px; }
+    .divider { width: 100%; height: 1px; background: var(--border); margin: 2px 0; }
+
+    .desc {
+      color: #374151;
+      font-size: 15px;
+      line-height: 1.75;
+      text-align: left;
+    }
+    .desc strong { color: var(--blue); }
+
+    .hint-box {
+      background: var(--panel);
+      border-radius: 12px;
+      padding: 12px 16px;
+      font-size: 13px;
+      color: var(--dim);
+      line-height: 1.8;
+      text-align: left;
+      width: 100%;
+    }
+
+    .btn-row { display: flex; gap: 10px; width: 100%; }
+
+    .btn-secondary {
+      flex: 1;
+      height: 48px;
+      background: var(--panel);
+      color: #374151;
+      border: 1.5px solid var(--border);
+      border-radius: 12px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.1s;
+    }
+    .btn-secondary:active { background: #F3F4F6; }
+    .btn-secondary.active {
+      background: #EFF6FF;
+      border-color: var(--blue);
+      color: var(--blue);
+    }
+
+    .btn-start {
+      width: 100%;
+      height: 54px;
+      background: var(--blue);
+      color: #fff;
+      border: none;
+      border-radius: 14px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.15s;
+    }
+    .btn-start:active { background: var(--blue-d); }
+    .btn-start:disabled { background: var(--dim); cursor: default; }
+
+    /* ── SHARED TIMER AREA ────────────────────────────────────────────────── */
+    .timer-area {
+      width: 100%;
+      padding: 20px 24px 0;
+      flex-shrink: 0;
+    }
+    .timer-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+    }
+    .big-timer {
+      font-size: 52px;
+      font-weight: 800;
+      letter-spacing: -2px;
+      color: var(--text);
+      transition: color 0.3s;
+    }
+    .big-timer.urgent { color: var(--red); }
+    .q-counter {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--dim);
+    }
+    .prog-wrap {
+      width: 100%;
+      height: 5px;
+      background: var(--border);
+      margin-top: 12px;
+      flex-shrink: 0;
+    }
+    .prog-bar {
+      height: 100%;
+      background: var(--orange);
+      transition: width 0.9s linear, background 0.3s;
+    }
+
+    /* ── QUIZ ─────────────────────────────────────────────────────────────── */
+    #quiz { justify-content: flex-start; }
+
+    .quiz-body {
+      flex: 1;
+      width: 100%;
+      padding: 20px 20px 0;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .cat-label {
+      font-size: 11px;
+      font-weight: 700;
+      color: var(--blue);
+      letter-spacing: 0.8px;
+      text-transform: uppercase;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .pos-hint {
+      display: inline-block;
+      background: #FEF3C7;
+      color: #92400E;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      text-transform: none;
+    }
+
+    .sentence-card {
+      background: #fff;
+      border: 1.5px solid var(--border);
+      border-radius: 14px;
+      padding: 20px 18px;
+      width: 100%;
+    }
+
+    .sentence-text {
+      font-size: 16px;
+      line-height: 2.5;
+      color: #374151;
+    }
+
+    /* Letter box common */
+    .lbox {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 28px;
+      height: 34px;
+      border: 1.5px solid var(--border);
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+      font-family: 'Courier New', Courier, monospace;
+      flex-shrink: 0;
+      vertical-align: middle;
+    }
+    .lbox.revealed {
+      background: #D1FAE5;
+      color: #065F46;
+      border-color: #6EE7B7;
+    }
+
+    /* Input letter box */
+    input.lbox {
+      background: #fff;
+      color: var(--text);
+      cursor: text;
+      outline: none;
+      padding: 0;
+      -webkit-appearance: none;
+      appearance: none;
+    }
+    input.lbox:focus {
+      border-color: var(--blue);
+      background: #EFF6FF;
+    }
+    .lbox.correct {
+      background: #D1FAE5 !important;
+      color: #065F46 !important;
+      border-color: #6EE7B7 !important;
+    }
+    .lbox.incorrect {
+      background: #FEE2E2 !important;
+      color: #991B1B !important;
+      border-color: #FCA5A5 !important;
+    }
+
+    /* Word wrapper (inline) */
+    .word-wrap {
+      display: inline-flex;
+      align-items: center;
+      vertical-align: middle;
+      gap: 2px;
+      margin: 0 3px;
+    }
+    /* Responsive box sizes for longer words */
+    .word-wrap.sz-md .lbox { width: 24px; font-size: 13px; }
+    .word-wrap.sz-sm .lbox { width: 20px; font-size: 12px; }
+
+    /* Feedback bar */
+    .feedback {
+      width: 100%;
+      padding: 12px 16px;
+      border-radius: 10px;
+      font-size: 15px;
+      font-weight: 700;
+      text-align: center;
+    }
+    .feedback.hidden { display: none; }
+    .feedback.correct-fb  { background: #D1FAE5; color: #065F46; }
+    .feedback.incorrect-fb { background: #FEE2E2; color: #991B1B; }
+
+    /* Quiz footer */
+    .quiz-footer {
+      width: 100%;
+      padding: 14px 20px 32px;
+      flex-shrink: 0;
+    }
+
+    /* ── REVIEW ────────────────────────────────────────────────────────────── */
+    #review { justify-content: flex-start; }
+    .review-header {
+      width: 100%;
+      padding: 20px 20px 14px;
+      flex-shrink: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+    .review-title  { font-size: 22px; font-weight: 800; }
+    .review-score  { font-size: 15px; font-weight: 600; color: var(--dim); }
+    .review-pct    { font-size: 30px; font-weight: 800; color: var(--blue); }
+    .review-list {
+      flex: 1;
+      width: 100%;
+      padding: 0 16px 16px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .rv-card {
+      border-radius: 12px;
+      border: 1.5px solid var(--border);
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.8;
+    }
+    .rv-card.rv-ok  { border-color: #6EE7B7; background: #F0FDF4; }
+    .rv-card.rv-ng  { border-color: #FCA5A5; background: #FFF5F5; }
+    .rv-num  { font-size: 11px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 6px; }
+    .rv-ok  .rv-num { color: #059669; }
+    .rv-ng  .rv-num { color: #DC2626; }
+    .rv-sentence { color: #374151; }
+    .rv-answer {
+      margin-top: 6px;
+      font-size: 13px;
+    }
+    .rv-ok  .rv-answer { color: #059669; }
+    .rv-ng  .rv-answer { color: #DC2626; }
+    .rv-def {
+      margin-top: 6px;
+      font-size: 13px;
+      color: #6B7280;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .rv-pos {
+      display: inline-block;
+      background: #E0E7FF;
+      color: #4338CA;
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      padding: 1px 6px;
+      border-radius: 999px;
+      flex-shrink: 0;
+    }
+    .ans-word {
+      font-family: 'Courier New', Courier, monospace;
+      font-weight: 700;
+      font-size: 15px;
+      background: #fff;
+      border-radius: 4px;
+      padding: 1px 5px;
+    }
+    .review-footer {
+      width: 100%;
+      padding: 12px 16px 32px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HOME ──────────────────────────────────────────────────────────────── -->
+<div id="home" class="screen">
+  <p style="font-size:1.05rem; font-weight:700; color:#E11D48; text-align:center; margin-bottom:4px;">예은아, DET 합격까지 화이팅! 💕</p>
+  <h1>DET Fill in the Blank</h1>
+  <p class="sub">Duolingo English Test · Fill in the Blank</p>
+  <div class="divider"></div>
+  <p class="desc">
+    문장 속 단어의 <strong>빈 글자</strong>를 채워보세요.<br>
+    초록 박스는 힌트, 흰 박스에 한 글자씩 입력합니다.
+  </p>
+  <div class="hint-box">
+    ⏱ 제한 시간: <strong style="color:#374151">20초</strong> / 문제<br>
+    📝 총 421문제 중 랜덤 10문제 출제<br>
+    ✏️ 각 칸에 글자 입력 → Enter 또는 확인 버튼<br>
+    📋 10문제 완료 후 전체 결과 리뷰 가능
+  </div>
+  <button class="btn-start" onclick="startQuiz()">시  작</button>
+</div>
+
+<!-- ── QUIZ ──────────────────────────────────────────────────────────────── -->
+<div id="quiz" class="screen hidden">
+  <div class="timer-area">
+    <div class="timer-row">
+      <div class="big-timer" id="q-timer">20</div>
+      <div class="q-counter"  id="q-counter">1 / 10</div>
+    </div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-bar" id="q-bar" style="width:100%"></div>
+  </div>
+  <div class="quiz-body">
+    <div class="sentence-card" id="sentence-card"></div>
+  </div>
+  <div class="quiz-footer">
+    <button class="btn-start" id="btn-action" onclick="handleAction()">확인</button>
+  </div>
+</div>
+
+<!-- ── REVIEW ───────────────────────────────────────────────────────────── -->
+<div id="review" class="screen hidden">
+  <div class="review-header">
+    <div class="review-title" id="rv-emoji">🎉 결과</div>
+    <div class="review-pct"  id="rv-pct">0%</div>
+    <div class="review-score" id="rv-score">0 / 10</div>
+  </div>
+  <div class="divider" style="width:calc(100% - 32px); margin: 0 16px;"></div>
+  <div class="review-list" id="rv-list"></div>
+  <div class="review-footer">
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="show('home')">홈으로</button>
+      <button class="btn-secondary" onclick="startQuiz()">다시 풀기</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+
+/* ════════════════════════════════════════════════════════════════
+   QUESTION DATA  (60 questions)
+   format: { cat, before, word, after, reveal: [shown-letter-indices] }
+════════════════════════════════════════════════════════════════ */
+const QUESTIONS = [
+  // ── Daily Life ──────────────────────────────────────────────
+  { cat:"Daily Life",
+    before:"When it comes to fixing cars, I am completely",
+    word:"clueless", after:"and always need to call a professional for help.",
+    reveal:[0,1,2,3],
+    def:"전혀 모르는, 감이 없는", pos:"adj" },
+  { cat:"Daily Life",
+    before:"After working three consecutive night shifts, the nurse felt completely",
+    word:"exhausted", after:"and went straight to bed the moment she got home.",
+    reveal:[0,1,2,3],
+    def:"기진맥진한, 탈진한", pos:"adj" },
+  { cat:"Daily Life",
+    before:"Finding",
+    word:"affordable", after:"housing in major cities has become increasingly difficult for young workers.",
+    reveal:[0,1,2,3,4],
+    def:"저렴한, 감당할 수 있는", pos:"adj" },
+  { cat:"Daily Life",
+    before:"Online shopping is incredibly",
+    word:"convenient", after:"because you can order almost anything without leaving your home.",
+    reveal:[0,1,2,3,4],
+    def:"편리한", pos:"adj" },
+  { cat:"Daily Life",
+    before:"A",
+    word:"reliable", after:"car is essential for people who commute long distances every single day.",
+    reveal:[0,1,2,3],
+    def:"믿을 수 있는", pos:"adj" },
+  { cat:"Daily Life",
+    before:"She felt deeply",
+    word:"grateful", after:"to her mentor for guiding her through such a demanding project.",
+    reveal:[0,1,2,3],
+    def:"감사한", pos:"adj" },
+  { cat:"Daily Life",
+    before:"Establishing a consistent morning",
+    word:"routine", after:"can greatly improve your focus and productivity throughout the day.",
+    reveal:[0,1,2,3],
+    def:"일상, 루틴", pos:"n" },
+  { cat:"Daily Life",
+    before:"Good communication skills are",
+    word:"essential", after:"in any successful relationship, whether personal or professional.",
+    reveal:[0,1,2,3,4],
+    def:"필수적인", pos:"adj" },
+
+  // ── Education ───────────────────────────────────────────────
+  { cat:"Education",
+    before:"Her",
+    word:"academic", after:"performance improved dramatically after she began following a strict study schedule.",
+    reveal:[0,1,2,3],
+    def:"학문적인, 학업의", pos:"adj" },
+  { cat:"Education",
+    before:"She plans to",
+    word:"graduate", after:"from university with a degree in environmental science next spring.",
+    reveal:[0,1,2,3],
+    def:"졸업하다", pos:"v" },
+  { cat:"Education",
+    before:"The school recently updated its",
+    word:"curriculum", after:"to include more digital literacy and problem-solving skills for all students.",
+    reveal:[0,1,2,3,4],
+    def:"교육과정", pos:"n" },
+  { cat:"Education",
+    before:"He received a full",
+    word:"scholarship", after:"to attend one of the most prestigious universities in the country.",
+    reveal:[0,1,2,3,4,5],
+    def:"장학금", pos:"n" },
+  { cat:"Education",
+    before:"Developing",
+    word:"critical", after:"thinking skills is one of the most important goals of a quality education.",
+    reveal:[0,1,2,3],
+    def:"비판적인, 중요한", pos:"adj" },
+  { cat:"Education",
+    before:"Teachers must regularly",
+    word:"evaluate", after:"student progress to ensure that everyone is meeting the required learning objectives.",
+    reveal:[0,1,2,3],
+    def:"평가하다", pos:"v" },
+  { cat:"Education",
+    before:"Inspiring teachers know exactly how to",
+    word:"motivate", after:"their students to take full ownership of their own learning journey.",
+    reveal:[0,1,2,3],
+    def:"동기를 부여하다", pos:"v" },
+
+  // ── Environment ─────────────────────────────────────────────
+  { cat:"Environment",
+    before:"Air",
+    word:"pollution", after:"in major cities has been directly linked to higher rates of respiratory disease.",
+    reveal:[0,1,2,3],
+    def:"오염", pos:"n" },
+  { cat:"Environment",
+    before:"If we fail to recycle, most household waste eventually ends up in a",
+    word:"landfill", after:"where it can slowly contaminate the surrounding soil and water supply.",
+    reveal:[0,1,2,3],
+    def:"쓰레기 매립지", pos:"n" },
+  { cat:"Environment",
+    before:"Governments around the world are investing heavily in",
+    word:"renewable", after:"energy sources such as solar and wind power to help combat climate change.",
+    reveal:[0,1,2,3,4],
+    def:"재생 가능한", pos:"adj" },
+  { cat:"Environment",
+    before:"Wildlife",
+    word:"conservation", after:"efforts have helped several endangered species slowly begin to recover their populations.",
+    reveal:[0,1,2,3,4,5],
+    def:"보전, 보존", pos:"n" },
+  { cat:"Environment",
+    before:"The restaurant is fully committed to using only",
+    word:"sustainable", after:"ingredients that are carefully sourced from certified local farms.",
+    reveal:[0,1,2,3,4],
+    def:"지속 가능한", pos:"adj" },
+  { cat:"Environment",
+    before:"Deforestation severely disrupts the entire local",
+    word:"ecosystem", after:"by destroying the natural habitat of thousands of plant and animal species.",
+    reveal:[0,1,2,3],
+    def:"생태계", pos:"n" },
+  { cat:"Environment",
+    before:"Many businesses are now working to actively reduce their",
+    word:"carbon", after:"footprint by switching to electric vehicles and clean renewable energy.",
+    reveal:[0,1,2,3],
+    def:"탄소", pos:"n" },
+
+  // ── Technology ──────────────────────────────────────────────
+  { cat:"Technology",
+    before:"Many experts predict that",
+    word:"artificial", after:"intelligence will fundamentally transform how people work within the next decade.",
+    reveal:[0,1,2,3,4],
+    def:"인공의, 인위적인", pos:"adj" },
+  { cat:"Technology",
+    before:"The rapid global shift to a",
+    word:"digital", after:"economy has created exciting new opportunities for entrepreneurs around the world.",
+    reveal:[0,1,2,3],
+    def:"디지털의", pos:"adj" },
+  { cat:"Technology",
+    before:"The new software made the entire billing process far more",
+    word:"efficient", after:"and significantly reduced the total number of human processing errors.",
+    reveal:[0,1,2,3],
+    def:"효율적인", pos:"adj" },
+  { cat:"Technology",
+    before:"The",
+    word:"invention", after:"of the internet is widely regarded as one of the most transformative events in history.",
+    reveal:[0,1,2,3],
+    def:"발명, 발명품", pos:"n" },
+  { cat:"Technology",
+    before:"Modern factories are beginning to",
+    word:"automate", after:"repetitive tasks that were previously performed entirely by human workers.",
+    reveal:[0,1,2,3],
+    def:"자동화하다", pos:"v" },
+  { cat:"Technology",
+    before:"Data",
+    word:"security", after:"is a growing concern for every company that stores sensitive personal information.",
+    reveal:[0,1,2,3],
+    def:"보안, 안전", pos:"n" },
+  { cat:"Technology",
+    before:"Social media platforms use a highly complex",
+    word:"algorithm", after:"to decide which content each individual user is most likely to engage with.",
+    reveal:[0,1,2,3,4],
+    def:"알고리즘", pos:"n" },
+
+  // ── Health ──────────────────────────────────────────────────
+  { cat:"Health",
+    before:"Regular",
+    word:"physical", after:"exercise has been shown to significantly reduce the risk of heart disease.",
+    reveal:[0,1,2,3],
+    def:"신체적인", pos:"adj" },
+  { cat:"Health",
+    before:"Good",
+    word:"nutrition", after:"is one of the most critical factors in maintaining a healthy body and a sharp mind.",
+    reveal:[0,1,2,3],
+    def:"영양", pos:"n" },
+  { cat:"Health",
+    before:"The patient's",
+    word:"recovery", after:"from surgery was faster than expected thanks to excellent care from the medical team.",
+    reveal:[0,1,2,3],
+    def:"회복", pos:"n" },
+  { cat:"Health",
+    before:"Doctors use a wide range of tests to carefully",
+    word:"diagnose", after:"illnesses before they recommend any specific course of treatment.",
+    reveal:[0,1,2,3],
+    def:"진단하다", pos:"v" },
+  { cat:"Health",
+    before:"Disease",
+    word:"prevention", after:"through mass vaccination is widely considered one of the most cost-effective health strategies.",
+    reveal:[0,1,2,3,4],
+    def:"예방", pos:"n" },
+  { cat:"Health",
+    before:"Millions of people around the world suffer from",
+    word:"chronic", after:"conditions such as diabetes or high blood pressure that require daily management.",
+    reveal:[0,1,2,3],
+    def:"만성적인", pos:"adj" },
+  { cat:"Health",
+    before:"A persistent cough can be a warning",
+    word:"symptom", after:"of several serious respiratory conditions and should never be ignored.",
+    reveal:[0,1,2,3],
+    def:"증상, 징후", pos:"n" },
+
+  // ── Society ─────────────────────────────────────────────────
+  { cat:"Society",
+    before:"A strong sense of",
+    word:"community", after:"can significantly improve people's mental health and overall sense of belonging.",
+    reveal:[0,1,2,3,4],
+    def:"공동체, 지역사회", pos:"n" },
+  { cat:"Society",
+    before:"Many activists have spent decades fighting for gender",
+    word:"equality", after:"in the workplace and in positions of political power and influence.",
+    reveal:[0,1,2,3],
+    def:"평등", pos:"n" },
+  { cat:"Society",
+    before:"She chose to",
+    word:"volunteer", after:"at a local shelter every weekend as a meaningful way to give back to her community.",
+    reveal:[0,1,2,3],
+    def:"자원봉사하다", pos:"v" },
+  { cat:"Society",
+    before:"Tackling",
+    word:"poverty", after:"requires a combination of better education, stable employment, and strong social support.",
+    reveal:[0,1,2,3],
+    def:"빈곤", pos:"n" },
+  { cat:"Society",
+    before:"Organizations that truly embrace",
+    word:"diversity", after:"tend to be more innovative and far better at solving complex real-world problems.",
+    reveal:[0,1,2,3],
+    def:"다양성", pos:"n" },
+  { cat:"Society",
+    before:"Many families hold tightly onto cultural",
+    word:"tradition", after:"as a meaningful way of preserving their shared identity across generations.",
+    reveal:[0,1,2,3],
+    def:"전통", pos:"n" },
+  { cat:"Society",
+    before:"Social media has a tremendously powerful",
+    word:"influence", after:"on how young people perceive themselves and the world around them.",
+    reveal:[0,1,2,3],
+    def:"영향", pos:"n" },
+
+  // ── Travel ──────────────────────────────────────────────────
+  { cat:"Travel",
+    before:"Paris is widely considered a dream",
+    word:"destination", after:"for travelers who want to experience world-class art, cuisine, and architecture.",
+    reveal:[0,1,2,3,4],
+    def:"목적지", pos:"n" },
+  { cat:"Travel",
+    before:"She had always dreamed of going abroad to",
+    word:"explore", after:"different cultures and experience entirely new and unfamiliar ways of living.",
+    reveal:[0,1,2,3],
+    def:"탐험하다, 탐색하다", pos:"v" },
+  { cat:"Travel",
+    before:"Backpacking solo through Southeast Asia was the greatest",
+    word:"adventure", after:"of his entire life and permanently changed the way he saw the world.",
+    reveal:[0,1,2,3],
+    def:"모험", pos:"n" },
+  { cat:"Travel",
+    before:"The long",
+    word:"journey", after:"across the mountain range taught her the true value of patience and resilience.",
+    reveal:[0,1,2,3],
+    def:"여정", pos:"n" },
+  { cat:"Travel",
+    before:"The dramatic volcanic",
+    word:"landscape", after:"of Iceland left every visitor completely breathless and in total awe.",
+    reveal:[0,1,2,3,4],
+    def:"풍경, 경관", pos:"n" },
+  { cat:"Travel",
+    before:"Without any map, it was extremely difficult to",
+    word:"navigate", after:"through the narrow and winding streets of the ancient city.",
+    reveal:[0,1,2,3],
+    def:"길을 찾다, 항해하다", pos:"v" },
+
+  // ── Career ──────────────────────────────────────────────────
+  { cat:"Career",
+    before:"She found that working from home made her significantly more",
+    word:"productive", after:"because she experienced far fewer interruptions and distractions.",
+    reveal:[0,1,2,3,4],
+    def:"생산적인", pos:"adj" },
+  { cat:"Career",
+    before:"He spent several hours carefully preparing for his job",
+    word:"interview", after:"by practising answers to common questions with a trusted colleague.",
+    reveal:[0,1,2,3],
+    def:"면접", pos:"n" },
+  { cat:"Career",
+    before:"Missing an important project",
+    word:"deadline", after:"can seriously damage your reputation and have a negative effect on team morale.",
+    reveal:[0,1,2,3],
+    def:"마감일", pos:"n" },
+  { cat:"Career",
+    before:"Employees who consistently perform well are more likely to be",
+    word:"promoted", after:"into a higher position of responsibility within the organization.",
+    reveal:[0,1,2,3],
+    def:"승진한", pos:"adj" },
+  { cat:"Career",
+    before:"Strong",
+    word:"leadership", after:"is essential when guiding a team through difficult periods of change and disruption.",
+    reveal:[0,1,2,3,4],
+    def:"리더십, 지도력", pos:"n" },
+  { cat:"Career",
+    before:"He was deeply",
+    word:"ambitious", after:"from a very young age, always setting bold goals and working hard to achieve them.",
+    reveal:[0,1,2,3],
+    def:"야망 있는", pos:"adj" },
+
+  // ── Science & Nature ────────────────────────────────────────
+  { cat:"Science",
+    before:"Objects fall toward the ground because of",
+    word:"gravity", after:", a fundamental force that acts between all objects that have mass.",
+    reveal:[0,1,2,3],
+    def:"중력", pos:"n" },
+  { cat:"Science",
+    before:"The Earth's",
+    word:"atmosphere", after:"shields all living things from harmful solar radiation and makes life on our planet possible.",
+    reveal:[0,1,2,3,4],
+    def:"대기, 분위기", pos:"n" },
+  { cat:"Science",
+    before:"The dodo bird became completely",
+    word:"extinct", after:"in the 17th century, largely due to overhunting and the destruction of its habitat.",
+    reveal:[0,1,2,3],
+    def:"멸종한", pos:"adj" },
+  { cat:"Science",
+    before:"Scientists must gather strong and reliable",
+    word:"evidence", after:"before they can confidently publish their findings and claim a new discovery.",
+    reveal:[0,1,2,3],
+    def:"증거", pos:"n" },
+  { cat:"Science",
+    before:"Millions of birds",
+    word:"migrate", after:"thousands of miles every year in search of warmer climates and more abundant food.",
+    reveal:[0,1,2,3],
+    def:"이동하다, 이주하다", pos:"v" },
+  { cat:"Science",
+    before:"The research team worked carefully to",
+    word:"analyze", after:"all collected data and determine whether their original hypothesis had been supported.",
+    reveal:[0,1,2,3],
+    def:"분석하다", pos:"v" },
+
+  // ── DET Practice Set 001 (B2) ──────────────────────────────
+  { cat:"Science",
+    before:"Scientists who study",
+    word:"ecology", after:"look at natural diversity and interactions between organisms.",
+    reveal:[0,1,2],
+    def:"생태학", pos:"n" },
+  { cat:"Daily Life",
+    before:"The air felt cool against the",
+    word:"bare", after:"skin of their arms.",
+    reveal:[0,1],
+    def:"맨살의, 벌거벗은", pos:"adj" },
+  { cat:"Workplace",
+    before:"To protect confidential information, organizations often",
+    word:"restrict", after:"the ability of employees to view certain files or databases.",
+    reveal:[0,1,2],
+    def:"제한하다", pos:"v" },
+  { cat:"Workplace",
+    before:"When attending a meeting, it's important to minimize",
+    word:"interruptions", after:"to maintain focus and productivity.",
+    reveal:[0,1,2,3,4],
+    def:"방해, 중단", pos:"n" },
+  { cat:"Daily Life",
+    before:"Even in my busiest periods, I knew I could",
+    word:"rely", after:"on my own willpower to get me through.",
+    reveal:[0,1],
+    def:"의존하다", pos:"v" },
+  { cat:"Travel",
+    before:"This location is",
+    word:"commonly", after:"known among travelers as a must-visit destination in their holiday plans.",
+    reveal:[0,1,2],
+    def:"흔히, 보통", pos:"adv" },
+  { cat:"Education",
+    before:"With",
+    word:"declining", after:"enrollment rates, many rural schools are finding it hard to maintain operational funding.",
+    reveal:[0,1,2,3],
+    def:"감소하는", pos:"adj" },
+  { cat:"Daily Life",
+    before:"They can't wait to",
+    word:"upgrade", after:"to a much bigger apartment next year.",
+    reveal:[0,1,2],
+    def:"업그레이드하다", pos:"v" },
+  { cat:"Education",
+    before:"Have you finished the science",
+    word:"experiment", after:"for the chemistry class yet?",
+    reveal:[0,1,2,3],
+    def:"실험", pos:"n" },
+
+  // ── DET Practice Set 002 (B2) ──────────────────────────────
+  { cat:"Health",
+    before:"When planning meals, it's essential to focus on a",
+    word:"balanced", after:"approach to ensure all necessary nutrients are included.",
+    reveal:[0,1,2,3],
+    def:"균형 잡힌", pos:"adj" },
+  { cat:"Education",
+    before:"Amidst all the abstract concepts she taught, she also provided",
+    word:"concrete", after:"facts for students to hang on to.",
+    reveal:[0,1,2],
+    def:"구체적인", pos:"adj" },
+  { cat:"Workplace",
+    before:"The factory implemented an",
+    word:"efficient", after:"workflow to ensure all tasks were completed on time with minimal errors.",
+    reveal:[0,1,2,3],
+    def:"효율적인", pos:"adj" },
+  { cat:"Health",
+    before:"Thus, it's important to apply",
+    word:"sunscreen", after:"regularly to avoid harmful UV effects while enjoying outdoor activities.",
+    reveal:[0,1,2,3,4],
+    def:"자외선 차단제", pos:"n" },
+  { cat:"Daily Life",
+    before:"I love watching documentaries about celebrities because their lives always",
+    word:"fascinate", after:"me.",
+    reveal:[0,1,2,3],
+    def:"매혹하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"When introducing yourself to a new group, make sure your name is clearly",
+    word:"pronounced", after:"so everyone can address you correctly.",
+    reveal:[0,1,2,3],
+    def:"뚜렷한; 발음된", pos:"adj" },
+  { cat:"Culture",
+    before:"The tradition of oral storytelling is now",
+    word:"largely", after:"forgotten by all but the community's most dedicated historians.",
+    reveal:[0,1,2],
+    def:"주로, 대체로", pos:"adv" },
+  { cat:"Daily Life",
+    before:"She",
+    word:"occasionally", after:"slipped into an accent when recounting tales of her native land.",
+    reveal:[0,1,2,3,4],
+    def:"가끔", pos:"adv" },
+  { cat:"Daily Life",
+    before:"My backyard",
+    word:"floods", after:"every time we have a heavy rain.",
+    reveal:[0,1,2],
+    def:"홍수가 나다", pos:"v" },
+
+  // ── DET Practice Set 003 (B2) ──────────────────────────────
+  { cat:"Health",
+    before:"Are you aware that divers must equalize pressure in their",
+    word:"lungs", after:"to avoid discomfort during deep dives?",
+    reveal:[0,1],
+    def:"폐", pos:"n" },
+  { cat:"Science",
+    before:"When conducting experiments, it's crucial to avoid spending time on",
+    word:"irrelevant", after:"aspects that don't contribute to the main hypothesis.",
+    reveal:[0,1,2,3,4],
+    def:"무관한, 관련 없는", pos:"adj" },
+  { cat:"Workplace",
+    before:"Please elaborate on the reasons behind your decision to",
+    word:"implement", after:"this strategy now.",
+    reveal:[0,1,2,3],
+    def:"시행하다, 구현하다", pos:"v" },
+  { cat:"Sports",
+    before:"After months of training in the gym, I finally got the chance to",
+    word:"compete", after:"in the championship game.",
+    reveal:[0,1,2],
+    def:"경쟁하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"The new store advertised their grand opening on a giant",
+    word:"billboard", after:"just outside of town.",
+    reveal:[0,1,2,3],
+    def:"광고판", pos:"n" },
+  { cat:"Food",
+    before:"For the recipe, you should add a",
+    word:"teaspoon", after:"of salt to enhance the flavors of the dish.",
+    reveal:[0,1,2],
+    def:"티스푼", pos:"n" },
+  { cat:"Daily Life",
+    before:"Do you think we'll",
+    word:"encounter", after:"difficulties if we try to implement this strategy on a larger scale?",
+    reveal:[0,1,2,3],
+    def:"마주치다, 직면하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"Never underestimate the power of sheer",
+    word:"determination", after:".",
+    reveal:[0,1,2,3,4,5],
+    def:"결단력, 의지", pos:"n" },
+  { cat:"Daily Life",
+    before:"After seeing the mess in my house after the party, I was on the verge of a",
+    word:"meltdown", after:".",
+    reveal:[0,1,2],
+    def:"감정적 폭발, 붕괴", pos:"n" },
+
+  // ── DET Practice Set 004 (B2) ──────────────────────────────
+  { cat:"Technology",
+    before:"The use of smartphones has",
+    word:"spread", after:"rapidly across the world in the past decade.",
+    reveal:[0,1,2],
+    def:"퍼지다, 확산되다", pos:"v" },
+  { cat:"Workplace",
+    before:"The updated product represents a",
+    word:"marked", after:"improvement, showcasing better functionality and aesthetics.",
+    reveal:[0,1,2],
+    def:"눈에 띄는", pos:"adj" },
+  { cat:"Workplace",
+    before:"When submitting a formal report, ensure the",
+    word:"heading", after:"section contains your name and relevant details.",
+    reveal:[0,1,2],
+    def:"제목, 머리말", pos:"n" },
+  { cat:"Workplace",
+    before:"When streaming music online, platforms must ensure they are",
+    word:"licensed", after:"to avoid copyright infringement.",
+    reveal:[0,1,2],
+    def:"허가를 받은", pos:"adj" },
+  { cat:"Workplace",
+    before:"When setting up a workspace, ensure you have all the",
+    word:"necessary", after:"tools, such as a reliable internet connection and functional hardware.",
+    reveal:[0,1,2],
+    def:"필요한", pos:"adj" },
+  { cat:"Career",
+    before:"He's hoping to get",
+    word:"promoted", after:"to a manager position soon.",
+    reveal:[0,1,2,3],
+    def:"승진한", pos:"adj" },
+  { cat:"Daily Life",
+    before:"To operate a vehicle in most countries, a person must hold a valid driver's",
+    word:"license", after:"or permit.",
+    reveal:[0,1,2],
+    def:"면허증", pos:"n" },
+  { cat:"Daily Life",
+    before:"When problems",
+    word:"arise", after:"with the heating or electrical systems in your home, it's best to consult a professional.",
+    reveal:[0,1],
+    def:"발생하다, 생기다", pos:"v" },
+  { cat:"Society",
+    before:"In every relationship, there's always a tension between",
+    word:"external", after:"appearances and internal realities.",
+    reveal:[0,1,2],
+    def:"외부의", pos:"adj" },
+
+  // ── DET Practice Set 005 (B2) ──────────────────────────────
+  { cat:"Daily Life",
+    before:"They didn't want to",
+    word:"judge", after:"the game by its cover, but the concept didn't seem very interesting.",
+    reveal:[0,1],
+    def:"판단하다", pos:"v" },
+  { cat:"Workplace",
+    before:"Before making any major purchase, it's important to",
+    word:"justify", after:"the expense to those in charge of budgets.",
+    reveal:[0,1,2],
+    def:"정당화하다", pos:"v" },
+  { cat:"Workplace",
+    before:"To expand your audience and engage potential clients, you can",
+    word:"utilize", after:"online marketing strategies to boost your brand.",
+    reveal:[0,1,2],
+    def:"활용하다", pos:"v" },
+  { cat:"Architecture",
+    before:"The new bridge will have the longest",
+    word:"span", after:"in the entire city.",
+    reveal:[0,1],
+    def:"경간, 폭", pos:"n" },
+  { cat:"Daily Life",
+    before:"Located behind the main library, the cafe is",
+    word:"convenient", after:"for students looking for a quick snack between classes.",
+    reveal:[0,1,2,3],
+    def:"편리한", pos:"adj" },
+  { cat:"Science",
+    before:"The penguins migrate",
+    word:"south", after:"when the Antarctic summer approaches.",
+    reveal:[0,1,2,3],
+    def:"남쪽으로", pos:"adv" },
+  { cat:"Daily Life",
+    before:"It's important to dress appropriately for outdoor activities",
+    word:"regardless", after:"of the weather conditions.",
+    reveal:[0,1,2,3],
+    def:"관계없이", pos:"adv" },
+  { cat:"Science",
+    before:"Careful planning must be undertaken in archeological digs to ensure artifacts are not accidentally",
+    word:"disturbed", after:"or destroyed.",
+    reveal:[0,1,2,3],
+    def:"방해받은, 교란된", pos:"adj" },
+  { cat:"Daily Life",
+    before:"After much thought, I chose to focus on personal growth rather than",
+    word:"achievement", after:".",
+    reveal:[0,1,2,3,4,5],
+    def:"성취", pos:"n" },
+
+  // ── DET Practice Set 006 (B2) ──────────────────────────────
+  { cat:"Daily Life",
+    before:"In most cases,",
+    word:"generally", after:"the product should be delivered in 5-7 business days after placing the order.",
+    reveal:[0,1,2,3],
+    def:"일반적으로", pos:"adv" },
+  { cat:"Finance",
+    before:"When managing finances, it's important to keep track of all your multiple",
+    word:"accounts", after:"to ensure everything is in order.",
+    reveal:[0,1,2],
+    def:"계좌, 계정", pos:"n" },
+  { cat:"Society",
+    before:"If someone violates a contract, the other party can",
+    word:"sue", after:"them for breach of contract.",
+    reveal:[0],
+    def:"고소하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"We may",
+    word:"encounter", after:"some traffic on the way to the concert.",
+    reveal:[0,1,2,3],
+    def:"마주치다, 직면하다", pos:"v" },
+  { cat:"Culture",
+    before:"Are you going to the new art",
+    word:"exhibition", after:"at the museum this weekend?",
+    reveal:[0,1,2,3],
+    def:"전시회", pos:"n" },
+  { cat:"Daily Life",
+    before:"I've been",
+    word:"wrestling", after:"with my thoughts around the problem, hoping to find a solution.",
+    reveal:[0,1,2,3,4],
+    def:"씨름하다, 고민하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"When it comes to holiday planning, they're always stubborn instead of being",
+    word:"cooperative", after:"with everyone else's ideas.",
+    reveal:[0,1,2,3],
+    def:"협조적인", pos:"adj" },
+  { cat:"History",
+    before:"When studying ancient artifacts, historians often find items made of",
+    word:"bronze", after:"that highlight the advanced metalworking skills of early societies.",
+    reveal:[0,1,2],
+    def:"청동", pos:"n" },
+  { cat:"Education",
+    before:"Learning a foreign language has a",
+    word:"steep", after:"learning curve but it can get better after months of practice.",
+    reveal:[0,1],
+    def:"가파른; 급격한", pos:"adj" },
+
+  // ── DET Practice Set 007 (B2) ──────────────────────────────
+  { cat:"Society",
+    before:"When visiting the city council meeting, the",
+    word:"governor", after:"announced plans to improve public transportation for residents.",
+    reveal:[0,1,2,3],
+    def:"주지사", pos:"n" },
+  { cat:"Daily Life",
+    before:"She clutched the handle of the suitcase with her sweaty",
+    word:"palms", after:"boarding the train in the summer heat.",
+    reveal:[0,1],
+    def:"손바닥", pos:"n" },
+  { cat:"Daily Life",
+    before:"Use your phone to",
+    word:"calculate", after:"the tip at this restaurant.",
+    reveal:[0,1,2,3],
+    def:"계산하다", pos:"v" },
+
+  // ── DET Practice Set A1/A2/B1 ─────────────────────────────
+  { cat:"Daily Life",
+    before:"Since the weather is lovely, I",
+    word:"suggest", after:"we go for a walk in the park.",
+    reveal:[0,1,2],
+    def:"제안하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"When entering the apartment complex, you need a keycard to unlock the",
+    word:"gate", after:"and gain access.",
+    reveal:[0,1],
+    def:"문, 게이트", pos:"n" },
+  { cat:"Daily Life",
+    before:"Is anyone else tired of the outdated magazines in the doctor's waiting",
+    word:"room", after:"?",
+    reveal:[0,1],
+    def:"방", pos:"n" },
+  { cat:"Daily Life",
+    before:"In the morning the birds begin",
+    word:"getting", after:"ready by preening their feathers and searching for food.",
+    reveal:[0,1,2],
+    def:"되다, 얻다", pos:"v" },
+  { cat:"Daily Life",
+    before:"In the quiet of the library, I found solace in the pages of my favorite",
+    word:"book", after:".",
+    reveal:[0,1],
+    def:"책", pos:"n" },
+  { cat:"Daily Life",
+    before:"Smiling at the colorful mural, she felt",
+    word:"pleased", after:"to witness her creativity brightening up the neighborhood wall.",
+    reveal:[0,1],
+    def:"기쁜", pos:"adj" },
+  { cat:"Daily Life",
+    before:"I just installed a new",
+    word:"toilet", after:"with a seat warmer in the bathroom, and I love it.",
+    reveal:[0,1,2],
+    def:"변기, 화장실", pos:"n" },
+  { cat:"Daily Life",
+    before:"Make sure to look both ways before you",
+    word:"cross", after:"the street.",
+    reveal:[0,1],
+    def:"건너다", pos:"v" },
+  { cat:"Daily Life",
+    before:"Oh no, I found myself in a sticky",
+    word:"situation", after:"when I lost my passport abroad.",
+    reveal:[0,1,2,3],
+    def:"상황", pos:"n" },
+
+  // ── Extra (common DET vocabulary) ────────────────────────────
+  { cat:"Daily Life",
+    before:"The atmosphere in the room was tense as the two rivals exchanged",
+    word:"glances", after:"across the conference table.",
+    reveal:[0,1,2],
+    def:"눈길, 흘낏 봄", pos:"n" },
+  { cat:"Daily Life",
+    before:"Due to the heavy snowstorm, they had to",
+    word:"postpone", after:"the outdoor event until next weekend.",
+    reveal:[0,1,2,3],
+    def:"연기하다", pos:"v" },
+  { cat:"Travel",
+    before:"The view from the top of the mountain was absolutely",
+    word:"magnificent", after:", leaving all the hikers speechless.",
+    reveal:[0,1,2,3,4],
+    def:"장엄한, 훌륭한", pos:"adj" },
+  { cat:"Society",
+    before:"The billionaire was known for being extremely",
+    word:"generous", after:"with his wealth, donating millions to various charities.",
+    reveal:[0,1,2,3],
+    def:"관대한", pos:"adj" },
+  { cat:"Society",
+    before:"The two countries agreed to",
+    word:"negotiate", after:"a peace treaty to end decades of conflict.",
+    reveal:[0,1,2,3],
+    def:"협상하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"She tried her best not to",
+    word:"disappoint", after:"her parents, who had sacrificed so much for her education.",
+    reveal:[0,1,2,3],
+    def:"실망시키다", pos:"v" },
+  { cat:"Daily Life",
+    before:"Owning a pet makes you fully",
+    word:"responsible", after:"for another living creature's health and well-being.",
+    reveal:[0,1,2,3,4],
+    def:"책임감 있는", pos:"adj" },
+  { cat:"Environment",
+    before:"The earthquake caused an",
+    word:"enormous", after:"amount of damage to buildings and infrastructure across the region.",
+    reveal:[0,1,2,3],
+    def:"거대한", pos:"adj" },
+  { cat:"Technology",
+    before:"It is truly",
+    word:"remarkable", after:"how much technology has advanced in just the past twenty years.",
+    reveal:[0,1,2,3],
+    def:"놀라운", pos:"adj" },
+  { cat:"Culture",
+    before:"You must ask for",
+    word:"permission", after:"before taking photographs inside the museum.",
+    reveal:[0,1,2,3,4],
+    def:"허락, 허가", pos:"n" },
+  { cat:"Technology",
+    before:"It is easy to become",
+    word:"distracted", after:"by social media notifications when trying to concentrate on work.",
+    reveal:[0,1,2,3],
+    def:"집중하지 못한", pos:"adj" },
+  { cat:"Travel",
+    before:"He spent three weeks camping alone in the",
+    word:"wilderness", after:"with nothing but basic survival tools.",
+    reveal:[0,1,2,3,4],
+    def:"황야, 오지", pos:"n" },
+  { cat:"Society",
+    before:"The government pledged to be fully",
+    word:"transparent", after:"about how public funds are spent and managed.",
+    reveal:[0,1,2,3,4],
+    def:"투명한", pos:"adj" },
+  { cat:"Daily Life",
+    before:"The biggest",
+    word:"obstacle", after:"to her success was her own self-doubt and fear of failure.",
+    reveal:[0,1,2,3],
+    def:"장애물", pos:"n" },
+  { cat:"Daily Life",
+    before:"If you are not sure how to fix the leak, it is best to hire a",
+    word:"professional", after:"plumber.",
+    reveal:[0,1,2,3,4,5],
+    def:"전문가", pos:"n" },
+  { cat:"Daily Life",
+    before:"Her confidence grew",
+    word:"gradually", after:"as she practiced every day and received encouraging feedback.",
+    reveal:[0,1,2,3],
+    def:"점차적으로", pos:"adv" },
+  { cat:"Society",
+    before:"She decided to",
+    word:"volunteer", after:"at the local animal shelter every Saturday morning.",
+    reveal:[0,1,2,3],
+    def:"자원봉사하다", pos:"v" },
+  { cat:"Finance",
+    before:"It is wise to",
+    word:"budget", after:"your monthly expenses carefully so you never spend more than you earn.",
+    reveal:[0,1,2],
+    def:"예산을 세우다", pos:"v" },
+  { cat:"Society",
+    before:"People who",
+    word:"discriminate", after:"against others based on race or gender can face serious legal consequences.",
+    reveal:[0,1,2,3,4],
+    def:"차별하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"The company decided to",
+    word:"refund", after:"the customer's money after the product arrived damaged.",
+    reveal:[0,1,2],
+    def:"환불하다", pos:"v" },
+  { cat:"Science",
+    before:"The scientist made a",
+    word:"breakthrough", after:"discovery that could completely change the way we treat the disease.",
+    reveal:[0,1,2,3,4],
+    def:"돌파구, 획기적 발견", pos:"n" },
+  { cat:"Health",
+    before:"Stress can",
+    word:"weaken", after:"your immune system and make you more vulnerable to illness.",
+    reveal:[0,1,2],
+    def:"약하게 하다", pos:"v" },
+  { cat:"Environment",
+    before:"Plastic bags are",
+    word:"harmful", after:"to marine life because animals often mistake them for food.",
+    reveal:[0,1,2,3],
+    def:"해로운", pos:"adj" },
+  { cat:"Education",
+    before:"The professor asked students to",
+    word:"summarize", after:"the chapter in no more than three clear and concise sentences.",
+    reveal:[0,1,2,3],
+    def:"요약하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"Her dress was",
+    word:"elegant", after:"and perfectly suited to the formal occasion.",
+    reveal:[0,1,2,3],
+    def:"우아한", pos:"adj" },
+  { cat:"Daily Life",
+    before:"He felt completely",
+    word:"overwhelmed", after:"by the number of tasks he had to complete before the end of the week.",
+    reveal:[0,1,2,3,4],
+    def:"압도된", pos:"adj" },
+  { cat:"Technology",
+    before:"Many companies are now using",
+    word:"software", after:"to automate repetitive tasks and reduce human error.",
+    reveal:[0,1,2,3],
+    def:"소프트웨어", pos:"n" },
+  { cat:"Society",
+    before:"The new law was designed to",
+    word:"protect", after:"vulnerable citizens from fraud and financial exploitation.",
+    reveal:[0,1,2,3],
+    def:"보호하다", pos:"v" },
+  { cat:"Travel",
+    before:"You need a valid",
+    word:"passport", after:"to travel internationally, and it must not be expired.",
+    reveal:[0,1,2,3],
+    def:"여권", pos:"n" },
+  { cat:"Science",
+    before:"The vaccine helped the body build",
+    word:"immunity", after:"against the virus before it had a chance to spread.",
+    reveal:[0,1,2,3],
+    def:"면역", pos:"n" },
+  { cat:"Food",
+    before:"The restaurant is well known for using only fresh,",
+    word:"organic", after:"ingredients sourced directly from local farms.",
+    reveal:[0,1,2,3],
+    def:"유기농의", pos:"adj" },
+  { cat:"History",
+    before:"The French Revolution marked a turning point in the political",
+    word:"landscape", after:"of Europe and inspired uprisings across the continent.",
+    reveal:[0,1,2,3,4],
+    def:"풍경, 경관", pos:"n" },
+  { cat:"Daily Life",
+    before:"After hours of searching, she finally",
+    word:"located", after:"her missing keys inside her jacket pocket.",
+    reveal:[0,1,2,3],
+    def:"위치한", pos:"adj" },
+  // ── AWL Sublist 1 ──────────────────────────────────────────
+  { cat:"Science",
+    before:"Researchers need to carefully",
+    word:"analyze", after:"the data before drawing any conclusions from their experiments.",
+    reveal:[0,1,2], def:"분석하다", pos:"v" },
+  { cat:"Education",
+    before:"A fresh",
+    word:"approach", after:"to teaching mathematics helped struggling students finally understand the core concepts.",
+    reveal:[0,1,2,3], def:"접근법, 방식", pos:"n" },
+  { cat:"Workplace",
+    before:"Before making a decision, managers must",
+    word:"assess", after:"the risks and benefits of each available option.",
+    reveal:[0,1,2,3], def:"평가하다, 사정하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"It is dangerous to",
+    word:"assume", after:"you know someone's intentions without first speaking with them directly.",
+    reveal:[0,1,2], def:"가정하다, 추정하다", pos:"v" },
+  { cat:"Society",
+    before:"The local",
+    word:"authority", after:"has the power to approve or deny new construction projects within the city.",
+    reveal:[0,1,2,3], def:"당국, 권한", pos:"n" },
+  { cat:"Technology",
+    before:"The new service will be",
+    word:"available", after:"to all customers by the end of next month.",
+    reveal:[0,1,2,3], def:"이용 가능한", pos:"adj" },
+  { cat:"Health",
+    before:"Regular exercise provides many health",
+    word:"benefits", after:", including improved cardiovascular function and stronger mental resilience.",
+    reveal:[0,1,2,3], def:"이점, 혜택", pos:"n" },
+  { cat:"Education",
+    before:"The",
+    word:"concept", after:"of zero was one of the most revolutionary ideas in the history of mathematics.",
+    reveal:[0,1,2], def:"개념", pos:"n" },
+  { cat:"Science",
+    before:"To be valid, a scientific theory must produce",
+    word:"consistent", after:"results across multiple independent experiments.",
+    reveal:[0,1,2,3], def:"일관된", pos:"adj" },
+  { cat:"Education",
+    before:"Understanding the historical",
+    word:"context", after:"of a poem is essential to interpreting its true meaning.",
+    reveal:[0,1,2], def:"맥락, 상황", pos:"n" },
+  { cat:"Technology",
+    before:"Engineers worked for months to",
+    word:"create", after:"a smartphone battery that could last an entire week on a single charge.",
+    reveal:[0,1,2], def:"만들다, 창조하다", pos:"v" },
+  { cat:"Science",
+    before:"Collecting accurate",
+    word:"data", after:"is the most important step in any credible scientific research process.",
+    reveal:[0,1], def:"데이터, 자료", pos:"n" },
+  { cat:"Education",
+    before:"The dictionary aims to clearly",
+    word:"define", after:"each word with simple language that all readers can understand.",
+    reveal:[0,1,2,3], def:"정의하다", pos:"v" },
+  { cat:"Finance",
+    before:"The company's profits",
+    word:"derive", after:"mainly from the sale of software licenses and technical support subscriptions.",
+    reveal:[0,1,2,3], def:"얻다, 비롯되다", pos:"v" },
+  { cat:"Workplace",
+    before:"The charity works to",
+    word:"distribute", after:"food and medicine to families in the most underserved rural communities.",
+    reveal:[0,1,2,3], def:"배분하다, 유통하다", pos:"v" },
+  { cat:"Finance",
+    before:"The country's",
+    word:"economy", after:"grew steadily for five consecutive years before the global recession hit.",
+    reveal:[0,1,2], def:"경제", pos:"n" },
+  { cat:"Society",
+    before:"Local leaders worked together to",
+    word:"establish", after:"a community center that would serve all residents regardless of age.",
+    reveal:[0,1,2,3], def:"설립하다, 확립하다", pos:"v" },
+  { cat:"Finance",
+    before:"Officials used several models to",
+    word:"estimate", after:"the total cost of repairing the aging city bridge infrastructure.",
+    reveal:[0,1,2,3], def:"추정하다, 견적내다", pos:"v" },
+  { cat:"Society",
+    before:"It was",
+    word:"evident", after:"from the survey results that most residents strongly opposed the proposed development.",
+    reveal:[0,1,2,3], def:"분명한, 명백한", pos:"adj" },
+  { cat:"Science",
+    before:"Temperature is a key",
+    word:"factor", after:"that influences how quickly chemical reactions occur in a laboratory setting.",
+    reveal:[0,1,2,3], def:"요인, 요소", pos:"n" },
+  { cat:"Workplace",
+    before:"She was hired to",
+    word:"identify", after:"inefficiencies in the production line and propose concrete solutions.",
+    reveal:[0,1,2,3], def:"파악하다, 확인하다", pos:"v" },
+  { cat:"Finance",
+    before:"The family's monthly",
+    word:"income", after:"was barely enough to cover rent, food, and essential utilities.",
+    reveal:[0,1,2], def:"소득, 수입", pos:"n" },
+  { cat:"Science",
+    before:"Rising sea levels",
+    word:"indicate", after:"that global warming is accelerating far faster than scientists had previously predicted.",
+    reveal:[0,1,2], def:"나타내다, 시사하다", pos:"v" },
+  { cat:"Society",
+    before:"Every",
+    word:"individual", after:"has the right to express their opinions freely without fear of persecution.",
+    reveal:[0,1,2], def:"개인", pos:"n" },
+  { cat:"Education",
+    before:"Students often struggle to",
+    word:"interpret", after:"poems because the language used can be ambiguous and highly symbolic.",
+    reveal:[0,1,2], def:"해석하다", pos:"v" },
+  { cat:"Career",
+    before:"The new policy will",
+    word:"involve", after:"all staff members completing a mandatory training course by the end of the year.",
+    reveal:[0,1,2], def:"포함하다, 관련되다", pos:"v" },
+  { cat:"Society",
+    before:"Climate change is the most pressing",
+    word:"issue", after:"facing governments and communities around the world today.",
+    reveal:[0,1], def:"문제, 사안", pos:"n" },
+  { cat:"Science",
+    before:"The team used a new",
+    word:"method", after:"to extract clean drinking water from contaminated groundwater sources.",
+    reveal:[0,1,2], def:"방법", pos:"n" },
+  { cat:"Science",
+    before:"A solar eclipse can",
+    word:"occur", after:"when the moon passes directly between the Earth and the Sun.",
+    reveal:[0,1,2], def:"발생하다, 일어나다", pos:"v" },
+  { cat:"Finance",
+    before:"Over thirty",
+    word:"percent", after:"of the city's annual budget is allocated to public education and school infrastructure.",
+    reveal:[0,1,2], def:"퍼센트, 비율", pos:"n" },
+  { cat:"History",
+    before:"The Renaissance was a remarkably productive",
+    word:"period", after:"in European history that produced some of the world's greatest art and science.",
+    reveal:[0,1,2,3], def:"시기, 기간", pos:"n" },
+  { cat:"Society",
+    before:"The government introduced a new housing",
+    word:"policy", after:"aimed at making homeownership more accessible to low-income families.",
+    reveal:[0,1,2,3], def:"정책", pos:"n" },
+  { cat:"Education",
+    before:"Honesty is a fundamental",
+    word:"principle", after:"that all students are expected to uphold in both their work and their conduct.",
+    reveal:[0,1,2], def:"원칙", pos:"n" },
+  { cat:"Workplace",
+    before:"Please follow the correct",
+    word:"procedure", after:"when submitting expense claims to ensure they are processed without delays.",
+    reveal:[0,1,2,3], def:"절차", pos:"n" },
+  { cat:"Science",
+    before:"Photosynthesis is the",
+    word:"process", after:"by which plants convert sunlight into the energy they need to grow.",
+    reveal:[0,1,2,3], def:"과정", pos:"n" },
+  { cat:"Education",
+    before:"The course will",
+    word:"require", after:"students to complete at least three major research papers during the semester.",
+    reveal:[0,1,2,3], def:"요구하다", pos:"v" },
+  { cat:"Science",
+    before:"The team conducted",
+    word:"research", after:"into the long-term effects of air pollution on children's cognitive development.",
+    reveal:[0,1,2,3], def:"연구", pos:"n" },
+  { cat:"Career",
+    before:"Her",
+    word:"role", after:"in the project was to coordinate communication between the technical and creative teams.",
+    reveal:[0,1], def:"역할", pos:"n" },
+  { cat:"Education",
+    before:"The most",
+    word:"significant", after:"discovery in modern medicine is arguably the development of antibiotics.",
+    reveal:[0,1,2,3], def:"중요한, 의미 있는", pos:"adj" },
+  { cat:"Architecture",
+    before:"The architect carefully planned the internal",
+    word:"structure", after:"of the building to maximize natural light and minimize energy consumption.",
+    reveal:[0,1,2,3], def:"구조", pos:"n" },
+  { cat:"Science",
+    before:"Einstein's",
+    word:"theory", after:"of relativity forever changed how scientists understand the nature of space and time.",
+    reveal:[0,1,2,3], def:"이론", pos:"n" },
+  { cat:"Science",
+    before:"The results may",
+    word:"vary", after:"significantly depending on the temperature and humidity levels during the experiment.",
+    reveal:[0,1], def:"다르다, 변화하다", pos:"v" },
+
+  // ── AWL Sublist 2 ──────────────────────────────────────────
+  { cat:"Career",
+    before:"She worked extremely hard to",
+    word:"achieve", after:"her goal of becoming the first person in her family to earn a university degree.",
+    reveal:[0,1,2], def:"성취하다, 달성하다", pos:"v" },
+  { cat:"Education",
+    before:"The library recently",
+    word:"acquired", after:"a rare collection of medieval manuscripts that scholars had been studying for years.",
+    reveal:[0,1,2,3], def:"취득하다, 습득하다", pos:"v" },
+  { cat:"Health",
+    before:"Prolonged stress can negatively",
+    word:"affect", after:"both your physical health and your ability to concentrate on daily tasks.",
+    reveal:[0,1,2], def:"영향을 미치다", pos:"v" },
+  { cat:"Workplace",
+    before:"It is important to choose an",
+    word:"appropriate", after:"tone when writing formal business emails to senior colleagues.",
+    reveal:[0,1,2,3], def:"적절한", pos:"adj" },
+  { cat:"Career",
+    before:"The volunteer team was on hand to",
+    word:"assist", after:"elderly residents with grocery shopping and other essential daily errands.",
+    reveal:[0,1,2,3], def:"돕다, 보조하다", pos:"v" },
+  { cat:"Science",
+    before:"Biologists organize living things into",
+    word:"categories", after:"based on their shared physical characteristics and genetic relationships.",
+    reveal:[0,1,2,3], def:"범주, 카테고리", pos:"n" },
+  { cat:"Technology",
+    before:"The new app is highly",
+    word:"complex", after:"and requires users to complete a full tutorial before they can use all its features.",
+    reveal:[0,1,2,3], def:"복잡한", pos:"adj" },
+  { cat:"Science",
+    before:"After months of analysis, the team was able to",
+    word:"conclude", after:"that the new treatment was both safe and highly effective.",
+    reveal:[0,1,2,3], def:"결론 짓다", pos:"v" },
+  { cat:"Workplace",
+    before:"The researcher will",
+    word:"conduct", after:"a series of interviews with employees to gather feedback on workplace culture.",
+    reveal:[0,1,2,3], def:"수행하다, 실시하다", pos:"v" },
+  { cat:"Environment",
+    before:"The",
+    word:"consequences", after:"of failing to act on climate change will be felt by generations for centuries.",
+    reveal:[0,1,2,3], def:"결과, 영향", pos:"n" },
+  { cat:"Architecture",
+    before:"The city plans to",
+    word:"construct", after:"a new sports stadium that will seat over fifty thousand spectators.",
+    reveal:[0,1,2,3], def:"건설하다", pos:"v" },
+  { cat:"Society",
+    before:"Americans",
+    word:"consume", after:"more energy per person than almost any other country in the developed world.",
+    reveal:[0,1,2,3], def:"소비하다", pos:"v" },
+  { cat:"Finance",
+    before:"He used his",
+    word:"credit", after:"card to pay for the plane tickets, planning to pay the full balance at month's end.",
+    reveal:[0,1,2], def:"신용, 크레딧", pos:"n" },
+  { cat:"Career",
+    before:"The graphic",
+    word:"design", after:"team worked overnight to complete all the visuals needed for the product launch.",
+    reveal:[0,1,2,3], def:"디자인", pos:"n" },
+  { cat:"Education",
+    before:"Each student in the class had a",
+    word:"distinct", after:"learning style, so the teacher had to adapt her methods accordingly.",
+    reveal:[0,1,2,3], def:"뚜렷이 다른", pos:"adj" },
+  { cat:"Science",
+    before:"Carbon dioxide is a key",
+    word:"element", after:"in the greenhouse effect that is driving rising global temperatures.",
+    reveal:[0,1,2,3], def:"요소, 원소", pos:"n" },
+  { cat:"Education",
+    before:"The professor asked each student to critically",
+    word:"evaluate", after:"the strengths and weaknesses of the arguments presented in the assigned reading.",
+    reveal:[0,1,2,3], def:"평가하다", pos:"v" },
+  { cat:"Technology",
+    before:"One key",
+    word:"feature", after:"of the new smartphone is its ability to charge fully in under thirty minutes.",
+    reveal:[0,1,2,3], def:"특징, 기능", pos:"n" },
+  { cat:"Career",
+    before:"It is difficult to",
+    word:"focus", after:"on deep work when your phone is constantly buzzing with notifications.",
+    reveal:[0,1,2], def:"집중하다", pos:"v" },
+  { cat:"Society",
+    before:"Rapid urbanization has had a massive",
+    word:"impact", after:"on the environment, displacing wildlife and increasing levels of air pollution.",
+    reveal:[0,1,2,3], def:"영향, 충격", pos:"n" },
+  { cat:"Health",
+    before:"He suffered a serious knee",
+    word:"injury", after:"during the championship match and required surgery before he could play again.",
+    reveal:[0,1,2], def:"부상", pos:"n" },
+  { cat:"Finance",
+    before:"The government decided to",
+    word:"invest", after:"heavily in renewable energy infrastructure over the next five years.",
+    reveal:[0,1,2], def:"투자하다", pos:"v" },
+  { cat:"Workplace",
+    before:"Regular maintenance is essential to",
+    word:"maintain", after:"the efficiency and longevity of expensive industrial equipment.",
+    reveal:[0,1,2,3], def:"유지하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"It is completely",
+    word:"normal", after:"to feel nervous before speaking in front of a large audience.",
+    reveal:[0,1,2,3], def:"정상적인", pos:"adj" },
+  { cat:"Science",
+    before:"The team managed to",
+    word:"obtain", after:"a rare sample of deep-sea sediment from an unmanned underwater research vessel.",
+    reveal:[0,1,2,3], def:"얻다, 획득하다", pos:"v" },
+  { cat:"Society",
+    before:"Citizens are encouraged to",
+    word:"participate", after:"actively in local elections to make sure their voices are properly heard.",
+    reveal:[0,1,2,3], def:"참여하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"The results of the trial were overwhelmingly",
+    word:"positive", after:", giving the research team renewed confidence in their approach.",
+    reveal:[0,1,2,3], def:"긍정적인", pos:"adj" },
+  { cat:"Career",
+    before:"She has the",
+    word:"potential", after:"to become one of the most influential architects of her generation.",
+    reveal:[0,1,2,3], def:"잠재력, 가능성", pos:"n" },
+  { cat:"Education",
+    before:"Her",
+    word:"previous", after:"experience working in a hospital gave her a significant advantage in the medical program.",
+    reveal:[0,1,2,3], def:"이전의", pos:"adj" },
+  { cat:"Education",
+    before:"The",
+    word:"primary", after:"goal of early childhood education is to develop social skills alongside basic literacy.",
+    reveal:[0,1,2,3], def:"주요한, 1차적인", pos:"adj" },
+  { cat:"Finance",
+    before:"She saved for two years before she finally had enough money to",
+    word:"purchase", after:"her first home in the suburbs.",
+    reveal:[0,1,2,3], def:"구입하다", pos:"v" },
+  { cat:"Science",
+    before:"The study covered a wide",
+    word:"range", after:"of topics from genetics to environmental biology and sustainable agriculture.",
+    reveal:[0,1,2], def:"범위", pos:"n" },
+  { cat:"Society",
+    before:"People living in rural",
+    word:"regions", after:"often have limited access to healthcare services and high-quality education.",
+    reveal:[0,1,2,3], def:"지역, 지방", pos:"n" },
+  { cat:"Society",
+    before:"The new law will",
+    word:"regulate", after:"how tech companies handle and store the personal data of their users.",
+    reveal:[0,1,2,3], def:"규제하다", pos:"v" },
+  { cat:"Education",
+    before:"All sources used in an academic paper must be",
+    word:"relevant", after:"to the central argument and cited correctly in the bibliography.",
+    reveal:[0,1,2,3], def:"관련된", pos:"adj" },
+  { cat:"Environment",
+    before:"Protecting natural",
+    word:"resources", after:"like clean water and fertile soil is essential for future generations to survive.",
+    reveal:[0,1,2,3], def:"자원", pos:"n" },
+  { cat:"Daily Life",
+    before:"Always make sure your passwords are",
+    word:"secure", after:"by using a mix of letters, numbers, and special characters.",
+    reveal:[0,1,2,3], def:"안전한", pos:"adj" },
+  { cat:"Workplace",
+    before:"They had to carefully",
+    word:"select", after:"candidates from a pool of over five hundred highly qualified applicants.",
+    reveal:[0,1,2,3], def:"선택하다", pos:"v" },
+  { cat:"Career",
+    before:"A clear",
+    word:"strategy", after:"for growth is essential for any business that wants to remain competitive long-term.",
+    reveal:[0,1,2,3], def:"전략", pos:"n" },
+  { cat:"Society",
+    before:"The government commissioned a national",
+    word:"survey", after:"to understand how citizens feel about the quality of public transportation services.",
+    reveal:[0,1,2,3], def:"설문조사", pos:"n" },
+  { cat:"Culture",
+    before:"Young generations often struggle to connect with",
+    word:"traditional", after:"practices that their grandparents considered a natural and essential part of daily life.",
+    reveal:[0,1,2,3], def:"전통적인", pos:"adj" },
+
+  // ── AWL Sublist 3 ──────────────────────────────────────────
+  { cat:"Daily Life",
+    before:"Is there an",
+    word:"alternative", after:"route we can take to avoid the construction on the highway this afternoon?",
+    reveal:[0,1,2,3], def:"대안, 대체", pos:"n" },
+  { cat:"Career",
+    before:"Under these difficult",
+    word:"circumstances", after:", it is remarkable that the team managed to complete the project on time.",
+    reveal:[0,1,2,3], def:"상황, 여건", pos:"n" },
+  { cat:"Finance",
+    before:"The airline offered to",
+    word:"compensate", after:"passengers with travel vouchers after the flight was delayed by eight hours.",
+    reveal:[0,1,2,3], def:"보상하다", pos:"v" },
+  { cat:"Technology",
+    before:"The engine is a critical",
+    word:"component", after:"of any vehicle, responsible for converting fuel into the mechanical energy needed to move.",
+    reveal:[0,1,2,3], def:"구성 요소", pos:"n" },
+  { cat:"Health",
+    before:"Patients must give their",
+    word:"consent", after:"before doctors are legally permitted to perform any medical procedure on them.",
+    reveal:[0,1,2,3], def:"동의", pos:"n" },
+  { cat:"Finance",
+    before:"They received a",
+    word:"considerable", after:"amount of funding from private investors interested in expanding the startup globally.",
+    reveal:[0,1,2,3], def:"상당한", pos:"adj" },
+  { cat:"Science",
+    before:"Scientists observed a",
+    word:"constant", after:"drop in temperature as the balloon rose higher into the atmosphere.",
+    reveal:[0,1,2,3], def:"지속적인", pos:"adj" },
+  { cat:"Society",
+    before:"Volunteers",
+    word:"contribute", after:"thousands of hours of unpaid labor every year to support community service projects.",
+    reveal:[0,1,2,3], def:"기여하다, 공헌하다", pos:"v" },
+  { cat:"Workplace",
+    before:"The team needed to",
+    word:"coordinate", after:"carefully with all three departments to ensure a smooth product launch.",
+    reveal:[0,1,2,3], def:"조율하다", pos:"v" },
+  { cat:"Finance",
+    before:"The",
+    word:"corporate", after:"headquarters was relocated from New York to a smaller city to reduce operating costs.",
+    reveal:[0,1,2,3], def:"기업의, 법인의", pos:"adj" },
+  { cat:"Education",
+    before:"Applicants must meet all the required",
+    word:"criteria", after:"before their application will be considered for the scholarship program.",
+    reveal:[0,1,2,3], def:"기준", pos:"n" },
+  { cat:"Science",
+    before:"The teacher used diagrams to",
+    word:"demonstrate", after:"how electricity flows through a circuit in a way students could easily visualize.",
+    reveal:[0,1,2,3], def:"시범을 보이다, 설명하다", pos:"v" },
+  { cat:"Workplace",
+    before:"You must keep detailed",
+    word:"documents", after:"of all financial transactions to satisfy annual audit requirements.",
+    reveal:[0,1,2,3], def:"문서, 서류", pos:"n" },
+  { cat:"Society",
+    before:"English has come to",
+    word:"dominate", after:"international business, science, and technology in the modern globalized world.",
+    reveal:[0,1,2,3], def:"지배하다", pos:"v" },
+  { cat:"Education",
+    before:"The professor placed strong",
+    word:"emphasis", after:"on the importance of citing all sources carefully in academic writing.",
+    reveal:[0,1,2,3], def:"강조", pos:"n" },
+  { cat:"Workplace",
+    before:"The new safety procedures are designed to",
+    word:"ensure", after:"that all workers return home safely at the end of every working day.",
+    reveal:[0,1,2,3], def:"보장하다", pos:"v" },
+  { cat:"Education",
+    before:"A good legal",
+    word:"framework", after:"is essential to protect both consumers and businesses in a market economy.",
+    reveal:[0,1,2,3], def:"틀, 체계", pos:"n" },
+  { cat:"Finance",
+    before:"The charity relies heavily on public",
+    word:"funds", after:"to continue providing free meals and shelter to homeless families.",
+    reveal:[0,1,2], def:"자금, 기금", pos:"n" },
+  { cat:"Education",
+    before:"The teacher used diagrams and charts to",
+    word:"illustrate", after:"the complex relationship between population growth and resource consumption.",
+    reveal:[0,1,2], def:"설명하다, 삽화로 표현하다", pos:"v" },
+  { cat:"Society",
+    before:"Thousands of families",
+    word:"immigrate", after:"to new countries every year in search of better economic opportunities and safety.",
+    reveal:[0,1,2,3], def:"이민 오다", pos:"v" },
+  { cat:"Education",
+    before:"The subtitle of the book seems to",
+    word:"imply", after:"that the author believes modern schools are failing their most creative students.",
+    reveal:[0,1,2,3], def:"암시하다", pos:"v" },
+  { cat:"Career",
+    before:"In the",
+    word:"initial", after:"stages of the project, the team struggled to agree on a shared direction.",
+    reveal:[0,1,2,3], def:"초기의", pos:"adj" },
+  { cat:"Technology",
+    before:"Modern smartphones allow users to",
+    word:"interact", after:"with apps using voice commands, gestures, and even facial recognition.",
+    reveal:[0,1,2,3], def:"상호작용하다", pos:"v" },
+  { cat:"Technology",
+    before:"The team worked to find a clear",
+    word:"link", after:"between screen time and reduced attention spans in children under the age of ten.",
+    reveal:[0,1,2], def:"연관, 연결", pos:"n" },
+  { cat:"Career",
+    before:"The goal of the restructuring plan was to",
+    word:"maximize", after:"productivity while keeping costs as low as possible throughout the process.",
+    reveal:[0,1,2,3], def:"극대화하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"The delay was caused by a",
+    word:"minor", after:"technical fault that engineers quickly repaired without any further disruption.",
+    reveal:[0,1,2,3], def:"사소한", pos:"adj" },
+  { cat:"Career",
+    before:"The",
+    word:"outcome", after:"of the negotiation depended largely on how well each party understood the other's priorities.",
+    reveal:[0,1,2,3], def:"결과", pos:"n" },
+  { cat:"Finance",
+    before:"The factory's",
+    word:"output", after:"increased by forty percent after the new automated assembly line was installed.",
+    reveal:[0,1,2,3], def:"생산량, 출력", pos:"n" },
+  { cat:"Education",
+    before:"The",
+    word:"overall", after:"performance of the students improved significantly after the new curriculum was introduced.",
+    reveal:[0,1,2,3], def:"전반적인", pos:"adj" },
+  { cat:"Science",
+    before:"The biologist could",
+    word:"predict", after:"the migration path of the birds by analyzing weather patterns and historical data.",
+    reveal:[0,1,2,3], def:"예측하다", pos:"v" },
+  { cat:"Technology",
+    before:"The project is entering its final",
+    word:"phase", after:", which involves extensive user testing before the official public launch.",
+    reveal:[0,1,2], def:"단계", pos:"n" },
+  { cat:"Health",
+    before:"Doctors recommend taking short walks to",
+    word:"relax", after:"tense muscles and reduce the physical effects of stress after long periods of sitting.",
+    reveal:[0,1,2,3], def:"긴장을 풀다", pos:"v" },
+  { cat:"Finance",
+    before:"The government launched a new",
+    word:"scheme", after:"to help first-time buyers access affordable housing with low-interest mortgages.",
+    reveal:[0,1,2,3], def:"계획, 제도", pos:"n" },
+  { cat:"Education",
+    before:"Understanding the correct",
+    word:"sequence", after:"of historical events is critical for analyzing their causes and long-term consequences.",
+    reveal:[0,1,2,3], def:"순서, 연속", pos:"n" },
+  { cat:"Society",
+    before:"Working patterns have",
+    word:"shifted", after:"dramatically since the pandemic, with remote work now becoming a permanent norm.",
+    reveal:[0,1,2,3], def:"이동하다, 변화하다", pos:"v" },
+  { cat:"Finance",
+    before:"The project was not approved because the budget allocated was not",
+    word:"sufficient", after:"to complete all the required phases of the renovation.",
+    reveal:[0,1,2,3], def:"충분한", pos:"adj" },
+  { cat:"Workplace",
+    before:"She completed every",
+    word:"task", after:"assigned to her ahead of schedule, which impressed her supervisors greatly.",
+    reveal:[0,1,2], def:"과제, 임무", pos:"n" },
+  { cat:"Technology",
+    before:"The system requires a high level of",
+    word:"technical", after:"expertise to operate safely without risking damage to the sensitive equipment.",
+    reveal:[0,1,2,3], def:"기술적인", pos:"adj" },
+  { cat:"Education",
+    before:"The argument presented in the paper was",
+    word:"valid", after:"and supported by a wealth of credible, peer-reviewed academic sources.",
+    reveal:[0,1,2], def:"타당한", pos:"adj" },
+  { cat:"Finance",
+    before:"The total",
+    word:"volume", after:"of goods traded between the two nations reached a record high last year.",
+    reveal:[0,1,2,3], def:"양, 부피", pos:"n" },
+
+  // ── AWL Sublist 4 ──────────────────────────────────────────
+  { cat:"Technology",
+    before:"Only employees with special permission may",
+    word:"access", after:"the restricted database containing sensitive customer payment information.",
+    reveal:[0,1,2,3], def:"접근하다", pos:"v" },
+  { cat:"Health",
+    before:"The available facilities may not be",
+    word:"adequate", after:"to handle the large number of patients expected during the winter flu season.",
+    reveal:[0,1,2,3], def:"충분한, 적합한", pos:"adj" },
+  { cat:"Finance",
+    before:"The company produces an",
+    word:"annual", after:"report summarizing its financial performance and major achievements during the year.",
+    reveal:[0,1,2,3], def:"연간의", pos:"adj" },
+  { cat:"Science",
+    before:"It is",
+    word:"apparent", after:"from the graph that sales dropped sharply during the second quarter of the year.",
+    reveal:[0,1,2,3], def:"분명한", pos:"adj" },
+  { cat:"Career",
+    before:"A positive",
+    word:"attitude", after:"towards feedback and criticism is one of the most valuable traits in any employee.",
+    reveal:[0,1,2,3], def:"태도", pos:"n" },
+  { cat:"Society",
+    before:"The senator was known for her strong",
+    word:"civil", after:"rights record and her unwavering commitment to protecting vulnerable communities.",
+    reveal:[0,1,2], def:"시민의, 민간의", pos:"adj" },
+  { cat:"Career",
+    before:"She made a firm",
+    word:"commitment", after:"to complete the course even when the workload became extremely challenging.",
+    reveal:[0,1,2,3], def:"헌신, 약속", pos:"n" },
+  { cat:"Career",
+    before:"Strong",
+    word:"communication", after:"skills are considered essential in almost every professional role across all industries.",
+    reveal:[0,1,2,3], def:"의사소통", pos:"n" },
+  { cat:"Education",
+    before:"Students should",
+    word:"concentrate", after:"fully during lectures rather than checking their phones every few minutes.",
+    reveal:[0,1,2,3], def:"집중하다", pos:"v" },
+  { cat:"Education",
+    before:"The professor asked the class to",
+    word:"contrast", after:"the two political systems and discuss which had proven more effective over time.",
+    reveal:[0,1,2,3], def:"대조하다", pos:"v" },
+  { cat:"Science",
+    before:"The water",
+    word:"cycle", after:"describes how water moves continuously between the atmosphere, land, and ocean.",
+    reveal:[0,1,2], def:"순환", pos:"n" },
+  { cat:"Education",
+    before:"The panel will",
+    word:"debate", after:"the merits of switching from a traditional grading system to a competency-based model.",
+    reveal:[0,1,2,3], def:"토론하다", pos:"v" },
+  { cat:"Career",
+    before:"She secured the promotion",
+    word:"despite", after:"facing fierce competition from colleagues who had far more years of experience.",
+    reveal:[0,1,2,3], def:"~에도 불구하고", pos:"prep" },
+  { cat:"Workplace",
+    before:"The study examined both the",
+    word:"domestic", after:"and international markets to determine where demand was growing most rapidly.",
+    reveal:[0,1,2,3], def:"국내의", pos:"adj" },
+  { cat:"Technology",
+    before:"New applications of artificial intelligence are beginning to",
+    word:"emerge", after:"in fields ranging from healthcare diagnostics to autonomous vehicle navigation.",
+    reveal:[0,1,2,3], def:"나타나다, 등장하다", pos:"v" },
+  { cat:"Workplace",
+    before:"Human",
+    word:"error", after:"is responsible for a surprisingly large proportion of all workplace accidents and incidents.",
+    reveal:[0,1,2,3], def:"오류, 실수", pos:"n" },
+  { cat:"Career",
+    before:"Her long-term professional",
+    word:"goal", after:"is to establish her own design consultancy and work with international clients.",
+    reveal:[0,1,2], def:"목표", pos:"n" },
+  { cat:"Finance",
+    before:"The charity applied for a government",
+    word:"grant", after:"to fund the construction of a new community recreational center.",
+    reveal:[0,1,2,3], def:"보조금", pos:"n" },
+  { cat:"Science",
+    before:"Water boils at one hundred degrees Celsius; this is a fundamental scientific",
+    word:"hypothesis", after:"that has been confirmed countless times under controlled laboratory conditions.",
+    reveal:[0,1,2,3], def:"가설", pos:"n" },
+  { cat:"Technology",
+    before:"The company plans to",
+    word:"integrate", after:"all three separate software platforms into a single unified system by next year.",
+    reveal:[0,1,2,3], def:"통합하다", pos:"v" },
+  { cat:"Workplace",
+    before:"Finance teams handle only",
+    word:"internal", after:"budgets, while the sales team focuses entirely on generating external revenue.",
+    reveal:[0,1,2,3], def:"내부의", pos:"adj" },
+  { cat:"Science",
+    before:"The team hired a private detective to",
+    word:"investigate", after:"the source of the mysterious signal that had been detected by the research station.",
+    reveal:[0,1,2,3], def:"조사하다", pos:"v" },
+  { cat:"Society",
+    before:"The new development project will",
+    word:"occupy", after:"a large portion of the land currently used as a public green space.",
+    reveal:[0,1,2,3], def:"차지하다, 점유하다", pos:"v" },
+  { cat:"Science",
+    before:"The researchers plan to",
+    word:"propose", after:"a new model for understanding how languages evolve over long periods of time.",
+    reveal:[0,1,2,3], def:"제안하다", pos:"v" },
+  { cat:"Society",
+    before:"Some politicians hold",
+    word:"radical", after:"views that challenge the fundamental assumptions of the existing economic system.",
+    reveal:[0,1,2,3], def:"급진적인", pos:"adj" },
+  { cat:"Science",
+    before:"The samples were chosen at",
+    word:"random", after:"from a pool of two thousand volunteers to ensure the study results were unbiased.",
+    reveal:[0,1,2,3], def:"무작위의", pos:"adj" },
+  { cat:"Education",
+    before:"Positive feedback from teachers can greatly",
+    word:"reinforce", after:"a student's confidence and encourage them to continue making strong academic effort.",
+    reveal:[0,1,2,3], def:"강화하다", pos:"v" },
+  { cat:"Science",
+    before:"Scientists tracked a long-term",
+    word:"trend", after:"of warming ocean temperatures that they linked directly to increased carbon emissions.",
+    reveal:[0,1,2,3], def:"추세, 경향", pos:"n" },
+  { cat:"Career",
+    before:"The company is undergoing a major",
+    word:"transition", after:"from a traditional retail model to a fully digital e-commerce platform.",
+    reveal:[0,1,2,3], def:"전환, 이행", pos:"n" },
+
+  // ── AWL Sublist 5 ──────────────────────────────────────────
+  { cat:"Daily Life",
+    before:"After moving to a new city, she had to",
+    word:"adjust", after:"to a very different lifestyle and a much faster pace of daily life.",
+    reveal:[0,1,2,3], def:"적응하다", pos:"v" },
+  { cat:"Society",
+    before:"The university decided to",
+    word:"alter", after:"its admissions criteria to give more weight to personal circumstances and background.",
+    reveal:[0,1,2,3], def:"바꾸다, 변경하다", pos:"v" },
+  { cat:"Daily Life",
+    before:"Are you",
+    word:"aware", after:"that the deadline for submitting your application has been moved forward by two weeks?",
+    reveal:[0,1,2], def:"인식하는", pos:"adj" },
+  { cat:"Workplace",
+    before:"The factory is running at full",
+    word:"capacity", after:"and cannot take on any additional orders until the current backlog is cleared.",
+    reveal:[0,1,2,3], def:"용량, 역량", pos:"n" },
+  { cat:"Career",
+    before:"One of the greatest",
+    word:"challenges", after:"facing young professionals today is building a strong network in a competitive market.",
+    reveal:[0,1,2,3], def:"도전, 어려움", pos:"n" },
+  { cat:"Science",
+    before:"Carbon dioxide is a naturally occurring",
+    word:"compound", after:"made up of one carbon atom and two oxygen atoms.",
+    reveal:[0,1,2,3], def:"화합물", pos:"n" },
+  { cat:"Society",
+    before:"Many countries are experiencing serious internal",
+    word:"conflict", after:"over issues of immigration, income inequality, and access to public services.",
+    reveal:[0,1,2,3], def:"갈등, 분쟁", pos:"n" },
+  { cat:"Career",
+    before:"It is often helpful to",
+    word:"consult", after:"an experienced mentor before making any major career decisions.",
+    reveal:[0,1,2,3], def:"상담하다, 참고하다", pos:"v" },
+  { cat:"Science",
+    before:"As the climate continues to warm, many species may be forced to",
+    word:"evolve", after:"rapidly to survive in dramatically changed environments.",
+    reveal:[0,1,2,3], def:"진화하다", pos:"v" },
+  { cat:"Finance",
+    before:"The business plans to",
+    word:"expand", after:"into three new international markets by the end of the following fiscal year.",
+    reveal:[0,1,2,3], def:"확장하다", pos:"v" },
+  { cat:"Health",
+    before:"Long-term",
+    word:"exposure", after:"to loud noise can cause permanent hearing damage and increase the risk of tinnitus.",
+    reveal:[0,1,2,3], def:"노출", pos:"n" },
+  { cat:"Technology",
+    before:"Online platforms",
+    word:"facilitate", after:"easy communication between people located in completely different parts of the world.",
+    reveal:[0,1,2,3], def:"촉진하다, 가능하게 하다", pos:"v" },
+  { cat:"Education",
+    before:"Building strong critical thinking skills is",
+    word:"fundamental", after:"to success in any field, whether in science, business, law, or the arts.",
+    reveal:[0,1,2,3], def:"근본적인", pos:"adj" },
+  { cat:"Environment",
+    before:"Solar panels can",
+    word:"generate", after:"clean electricity for an entire household at virtually zero operating cost.",
+    reveal:[0,1,2,3], def:"생성하다, 발생시키다", pos:"v" },
+  { cat:"Society",
+    before:"Each",
+    word:"generation", after:"faces its own unique set of challenges shaped by the political and economic climate of its time.",
+    reveal:[0,1,2,3], def:"세대", pos:"n" },
+  { cat:"Technology",
+    before:"The company decided to",
+    word:"modify", after:"its software after receiving overwhelmingly negative feedback from early beta users.",
+    reveal:[0,1,2,3], def:"수정하다", pos:"v" },
+  { cat:"Health",
+    before:"Nurses use a variety of tools to closely",
+    word:"monitor", after:"a patient's vital signs throughout the recovery process after surgery.",
+    reveal:[0,1,2,3], def:"모니터링하다", pos:"v" },
+  { cat:"Technology",
+    before:"She built a strong professional",
+    word:"network", after:"by attending industry conferences and staying active on professional social media platforms.",
+    reveal:[0,1,2,3], def:"네트워크", pos:"n" },
+  { cat:"Education",
+    before:"The author's central",
+    word:"notion", after:"is that creativity cannot be taught in a traditional classroom environment.",
+    reveal:[0,1,2,3], def:"개념, 생각", pos:"n" },
+  { cat:"Education",
+    before:"From this",
+    word:"perspective", after:", the long-term benefits of investing in early childhood education far outweigh the costs.",
+    reveal:[0,1,2,3], def:"관점", pos:"n" },
+  { cat:"Science",
+    before:"The measurements must be",
+    word:"precise", after:"to within one millimetre for the engineering specifications to be met correctly.",
+    reveal:[0,1,2,3], def:"정확한", pos:"adj" },
+  { cat:"Education",
+    before:"Students are encouraged to",
+    word:"pursue", after:"topics they are passionate about for their independent research projects.",
+    reveal:[0,1,2,3], def:"추구하다", pos:"v" },
+  { cat:"Science",
+    before:"The",
+    word:"ratio", after:"of carbon to oxygen in the sample indicated that the fossil was approximately fifty thousand years old.",
+    reveal:[0,1,2,3], def:"비율", pos:"n" },
+  { cat:"Career",
+    before:"He decided to",
+    word:"resolve", after:"the long-standing conflict with his colleague through an honest and open conversation.",
+    reveal:[0,1,2,3], def:"해결하다", pos:"v" },
+  { cat:"Finance",
+    before:"She managed to",
+    word:"retain", after:"a small emergency fund even after losing her primary source of income unexpectedly.",
+    reveal:[0,1,2,3], def:"유지하다", pos:"v" },
+  { cat:"Science",
+    before:"The bridge was designed to remain fully",
+    word:"stable", after:"even during earthquakes measuring up to seven on the Richter scale.",
+    reveal:[0,1,2,3], def:"안정적인", pos:"adj" },
+  { cat:"Technology",
+    before:"She chose to",
+    word:"utilize", after:"a free online project management tool to keep all her team's tasks organized.",
+    reveal:[0,1,2,3], def:"활용하다", pos:"v" },
+  { cat:"Education",
+    before:"During the oral exam, she demonstrated",
+    word:"verbal", after:"fluency and a strong command of technical vocabulary in the target language.",
+    reveal:[0,1,2,3], def:"언어의, 구두의", pos:"adj" },
+  { cat:"Technology",
+    before:"The museum offers a fully immersive",
+    word:"virtual", after:"tour that allows visitors to explore every exhibit from anywhere in the world.",
+    reveal:[0,1,2,3], def:"가상의", pos:"adj" },
+
+  // ── AWL Sublist 6 ──────────────────────────────────────────
+  { cat:"Science",
+    before:"The new drug was tested over a",
+    word:"decade", after:"before it was approved by regulators and made available to the general public.",
+    reveal:[0,1,2,3], def:"10년", pos:"n" },
+  { cat:"Society",
+    before:"Experts debate whether",
+    word:"liberal", after:"economic policies lead to faster growth or simply increase inequality between classes.",
+    reveal:[0,1,2,3], def:"자유주의적인", pos:"adj" },
+  { cat:"Finance",
+    before:"The company earned enough",
+    word:"revenue", after:"in the first quarter to cover its entire projected annual operating costs.",
+    reveal:[0,1,2,3], def:"수익, 매출", pos:"n" },
+  { cat:"Education",
+    before:"The university requires all students to",
+    word:"submit", after:"a completed application form along with two academic references and a personal statement.",
+    reveal:[0,1,2,3], def:"제출하다", pos:"v" },
+  { cat:"Society",
+    before:"It is essential to",
+    word:"acknowledge", after:"the contributions made by minority communities to the cultural and economic life of the nation.",
+    reveal:[0,1,2,3], def:"인정하다", pos:"v" },
+  { cat:"Workplace",
+    before:"The manager asked the team to",
+    word:"prioritize", after:"the most urgent client requests before working on internal projects.",
+    reveal:[0,1,2,3], def:"우선시하다", pos:"v" },
+  { cat:"Society",
+    before:"The government passed legislation to",
+    word:"prohibit", after:"the use of single-use plastic bags in all major retail stores across the country.",
+    reveal:[0,1,2,3], def:"금지하다", pos:"v" },
+  { cat:"Environment",
+    before:"The organization's",
+    word:"mission", after:"is to protect endangered habitats and promote biodiversity across the continent.",
+    reveal:[0,1,2,3], def:"사명, 임무", pos:"n" },
+  { cat:"Technology",
+    before:"The software was designed to",
+    word:"detect", after:"potential security threats in real time and alert the system administrator immediately.",
+    reveal:[0,1,2,3], def:"감지하다", pos:"v" },
+  { cat:"Health",
+    before:"Drinking enough water each day helps",
+    word:"regulate", after:"body temperature and supports proper kidney function throughout the day.",
+    reveal:[0,1,2,3], def:"조절하다", pos:"v" },
+  { cat:"Finance",
+    before:"The investment was considered high-risk, but the",
+    word:"returns", after:"proved to be worth it when the startup was eventually acquired by a major corporation.",
+    reveal:[0,1,2,3], def:"수익, 이익", pos:"n" },
+  { cat:"Career",
+    before:"She developed a strong professional",
+    word:"identity", after:"through years of consistent work, mentorship, and personal reflection.",
+    reveal:[0,1,2,3], def:"정체성", pos:"n" },
+  { cat:"Science",
+    before:"The experiment's findings",
+    word:"challenge", after:"the long-held assumption that the brain stops developing entirely after the age of twenty-five.",
+    reveal:[0,1,2,3], def:"도전하다, 반박하다", pos:"v" },
+  { cat:"Finance",
+    before:"The project was",
+    word:"funded", after:"primarily through a combination of government grants and private investment from two major banks.",
+    reveal:[0,1,2], def:"자금을 지원받은", pos:"adj" },
+  { cat:"Science",
+    before:"The research team successfully",
+    word:"isolated", after:"the specific gene responsible for the inherited condition and mapped its location on the chromosome.",
+    reveal:[0,1,2,3], def:"분리하다", pos:"v" },
+  { cat:"Technology",
+    before:"Engineers worked to develop a more",
+    word:"accurate", after:"method of measuring atmospheric carbon dioxide at very low concentrations.",
+    reveal:[0,1,2,3], def:"정확한", pos:"adj" },
+  { cat:"Society",
+    before:"Human rights organizations regularly",
+    word:"advocate", after:"for stronger legal protections for refugees and asylum seekers worldwide.",
+    reveal:[0,1,2,3], def:"지지하다, 옹호하다", pos:"v" },
+  { cat:"Career",
+    before:"The team was asked to",
+    word:"compile", after:"a comprehensive report summarizing all customer complaints received during the past year.",
+    reveal:[0,1,2,3], def:"편집하다, 모으다", pos:"v" },
+  { cat:"Health",
+    before:"The clinic provides",
+    word:"accessible", after:"medical care to low-income families who cannot afford private health insurance.",
+    reveal:[0,1,2,3], def:"접근 가능한", pos:"adj" },
+  { cat:"Education",
+    before:"The researcher's findings were based on",
+    word:"empirical", after:"evidence gathered over twelve years of fieldwork in remote mountain communities.",
+    reveal:[0,1,2,3], def:"경험적인", pos:"adj" },
+
+  // ── AWL Sublist 7 ──────────────────────────────────────────
+  { cat:"Society",
+    before:"The nonprofit was founded with the central",
+    word:"objective", after:"of reducing homelessness in the city by providing affordable transitional housing.",
+    reveal:[0,1,2,3], def:"목표", pos:"n" },
+  { cat:"Education",
+    before:"The lecture provided a broad",
+    word:"overview", after:"of the major developments in cognitive science over the past fifty years.",
+    reveal:[0,1,2,3], def:"개요", pos:"n" },
+  { cat:"Science",
+    before:"The paper",
+    word:"proposes", after:"a new model for predicting earthquake activity based on underground water pressure changes.",
+    reveal:[0,1,2,3], def:"제안하다", pos:"v" },
+  { cat:"Science",
+    before:"Light from the sun takes approximately eight minutes to",
+    word:"reach", after:"the surface of the Earth, traveling at three hundred thousand kilometres per second.",
+    reveal:[0,1,2,3], def:"도달하다", pos:"v" },
+  { cat:"Workplace",
+    before:"She was recognized for her ability to",
+    word:"mediate", after:"disputes between colleagues and find fair solutions that satisfied all parties involved.",
+    reveal:[0,1,2,3], def:"중재하다", pos:"v" },
+  { cat:"Science",
+    before:"The discovery",
+    word:"transformed", after:"scientists' understanding of how the universe formed in the immediate aftermath of the Big Bang.",
+    reveal:[0,1,2,3], def:"변화시키다", pos:"v" },
+  { cat:"Technology",
+    before:"The startup developed a highly",
+    word:"innovative", after:"solution to reduce food waste by connecting surplus stock directly with local charities.",
+    reveal:[0,1,2,3], def:"혁신적인", pos:"adj" },
+  { cat:"Career",
+    before:"The award was given in",
+    word:"recognition", after:"of her extraordinary contributions to medical research over more than three decades.",
+    reveal:[0,1,2,3], def:"인정, 표창", pos:"n" },
+  { cat:"Workplace",
+    before:"The contract clearly",
+    word:"specifies", after:"the exact conditions under which either party may terminate the agreement without penalty.",
+    reveal:[0,1,2,3], def:"명시하다", pos:"v" },
+  { cat:"Society",
+    before:"The community",
+    word:"demanded", after:"greater transparency from local authorities about how taxpayer money was being allocated.",
+    reveal:[0,1,2,3], def:"요구하다", pos:"v" },
+
+  // ── AWL Sublist 8 ──────────────────────────────────────────
+  { cat:"Career",
+    before:"She was able to",
+    word:"negotiate", after:"a significantly higher salary by highlighting her unique qualifications during the offer stage.",
+    reveal:[0,1,2,3], def:"협상하다", pos:"v" },
+  { cat:"Science",
+    before:"Bacteria can",
+    word:"reproduce", after:"extremely quickly under the right temperature and nutrient conditions.",
+    reveal:[0,1,2,3], def:"번식하다, 재현하다", pos:"v" },
+  { cat:"Technology",
+    before:"The new operating system is designed to",
+    word:"minimize", after:"the risk of data loss by automatically saving all changes every few seconds.",
+    reveal:[0,1,2,3], def:"최소화하다", pos:"v" },
+  { cat:"Society",
+    before:"The organization works to",
+    word:"empower", after:"women in rural areas by providing vocational training and access to small business loans.",
+    reveal:[0,1,2,3], def:"권한을 주다, 역량을 키우다", pos:"v" },
+  { cat:"Education",
+    before:"The research",
+    word:"highlights", after:"the urgent need for greater investment in early childhood literacy programs.",
+    reveal:[0,1,2,3], def:"강조하다", pos:"v" },
+  { cat:"Technology",
+    before:"The team was asked to",
+    word:"simulate", after:"various disaster scenarios to test how the emergency response system would perform.",
+    reveal:[0,1,2,3], def:"모의 실험하다", pos:"v" },
+  { cat:"Environment",
+    before:"The",
+    word:"degradation", after:"of natural habitats is threatening thousands of plant and animal species with extinction.",
+    reveal:[0,1,2,3], def:"저하, 악화", pos:"n" },
+  { cat:"Career",
+    before:"Her ability to",
+    word:"inspire", after:"those around her made her one of the most effective leaders the organization had ever seen.",
+    reveal:[0,1,2,3], def:"영감을 주다", pos:"v" },
+  { cat:"Science",
+    before:"The virus was found to",
+    word:"mutate", after:"rapidly in response to selective pressure from antiviral medications.",
+    reveal:[0,1,2,3], def:"변이하다", pos:"v" },
+  { cat:"Finance",
+    before:"The",
+    word:"surplus", after:"from last year's budget was used to fund a new public library in the city center.",
+    reveal:[0,1,2,3], def:"잉여, 흑자", pos:"n" },
+  { cat:"Society",
+    before:"Activists pushed for a complete",
+    word:"revision", after:"of the immigration law, arguing that it unfairly targeted low-income families.",
+    reveal:[0,1,2,3], def:"개정, 수정", pos:"n" },
+  { cat:"Career",
+    before:"The company decided to",
+    word:"outsource", after:"its customer service operations to a specialist firm that could provide twenty-four-hour support.",
+    reveal:[0,1,2,3], def:"외주하다", pos:"v" },
+  { cat:"Education",
+    before:"Universities are working to",
+    word:"eliminate", after:"barriers that prevent talented students from disadvantaged backgrounds from applying.",
+    reveal:[0,1,2,3], def:"제거하다", pos:"v" },
+  { cat:"Society",
+    before:"The legislation aims to",
+    word:"protect", after:"consumers from deceptive advertising practices that mislead buyers about product quality.",
+    reveal:[0,1,2,3], def:"보호하다", pos:"v" },
+  { cat:"Finance",
+    before:"Investors must carefully",
+    word:"assess", after:"the level of risk involved before committing any significant funds to a new venture.",
+    reveal:[0,1,2,3], def:"평가하다", pos:"v" },
+  { cat:"Health",
+    before:"The doctor recommended a gradual",
+    word:"reduction", after:"in caffeine intake rather than stopping consumption all at once.",
+    reveal:[0,1,2,3], def:"감소, 축소", pos:"n" },
+  { cat:"Education",
+    before:"The scholarship committee will",
+    word:"review", after:"all submitted applications and announce the winners at the end of next month.",
+    reveal:[0,1,2,3], def:"검토하다", pos:"v" },
+  { cat:"Technology",
+    before:"The engineer worked to",
+    word:"refine", after:"the algorithm so that it could produce more accurate predictions with less data.",
+    reveal:[0,1,2,3], def:"개선하다, 정제하다", pos:"v" },
+  { cat:"Society",
+    before:"The survey revealed a significant",
+    word:"correlation", after:"between income levels and access to quality healthcare across different regions.",
+    reveal:[0,1,2,3], def:"상관관계", pos:"n" },
+  { cat:"Environment",
+    before:"Governments must",
+    word:"implement", after:"stronger policies to limit industrial carbon emissions and protect the global climate.",
+    reveal:[0,1,2,3], def:"시행하다, 실행하다", pos:"v" },
+  { cat:"Career",
+    before:"The board voted to",
+    word:"appoint", after:"a new chief executive with a proven track record in turning around struggling companies.",
+    reveal:[0,1,2,3], def:"임명하다", pos:"v" },
+  { cat:"Science",
+    before:"Researchers worked to",
+    word:"classify", after:"the newly discovered species based on its genetic sequence and physical characteristics.",
+    reveal:[0,1,2,3], def:"분류하다", pos:"v" },
+  { cat:"Workplace",
+    before:"The new hire was asked to",
+    word:"observe", after:"experienced team members closely before taking on any client-facing responsibilities.",
+    reveal:[0,1,2,3], def:"관찰하다", pos:"v" },
+  { cat:"Education",
+    before:"The essay must",
+    word:"address", after:"at least three of the five major themes discussed throughout the course.",
+    reveal:[0,1,2,3], def:"다루다, 언급하다", pos:"v" },
+  { cat:"Health",
+    before:"A well-designed rehabilitation program can help patients",
+    word:"restore", after:"full mobility after a serious joint injury.",
+    reveal:[0,1,2,3], def:"회복하다, 복구하다", pos:"v" },
+  { cat:"Finance",
+    before:"The government introduced a tax",
+    word:"incentive", after:"to encourage businesses to hire and train young workers fresh out of university.",
+    reveal:[0,1,2,3], def:"인센티브, 장려책", pos:"n" },
+  { cat:"Science",
+    before:"New satellite imaging technology has enabled scientists to",
+    word:"monitor", after:"deforestation in real time across remote and previously inaccessible jungle regions.",
+    reveal:[0,1,2,3], def:"모니터링하다", pos:"v" },
+  { cat:"Society",
+    before:"Community leaders met to",
+    word:"discuss", after:"strategies for improving public safety and reducing crime in the neighborhood.",
+    reveal:[0,1,2,3], def:"논의하다", pos:"v" },
+  { cat:"Career",
+    before:"New employees are required to",
+    word:"complete", after:"a comprehensive onboarding program during their first two weeks with the company.",
+    reveal:[0,1,2,3], def:"완료하다", pos:"v" },
+  { cat:"Technology",
+    before:"The team worked together to",
+    word:"upgrade", after:"the entire server infrastructure before the peak holiday shopping season began.",
+    reveal:[0,1,2,3], def:"업그레이드하다", pos:"v" },
+
+  // ── AWL Sublist 9-10 & Academic Vocabulary ──────────────────
+  { cat:"Science",
+    before:"The journal article was",
+    word:"published", after:"in one of the most highly regarded peer-reviewed scientific publications in the world.",
+    reveal:[0,1,2,3], def:"출판되다, 게재되다", pos:"v" },
+  { cat:"Society",
+    before:"The charity aims to",
+    word:"alleviate", after:"the suffering of families living in extreme poverty in the most affected regions.",
+    reveal:[0,1,2,3], def:"완화하다, 경감하다", pos:"v" },
+  { cat:"Education",
+    before:"The student was encouraged to",
+    word:"elaborate", after:"on her ideas during the oral presentation rather than simply reading from her notes.",
+    reveal:[0,1,2,3], def:"자세히 설명하다", pos:"v" },
+  { cat:"Finance",
+    before:"The company announced it would",
+    word:"allocate", after:"twenty percent of its annual profits directly to staff training and professional development.",
+    reveal:[0,1,2,3], def:"할당하다, 배정하다", pos:"v" },
+  { cat:"Technology",
+    before:"The new platform was designed to",
+    word:"streamline", after:"the entire application process so candidates could apply in under five minutes.",
+    reveal:[0,1,2,3], def:"간소화하다", pos:"v" },
+  { cat:"Society",
+    before:"The program was specifically designed to",
+    word:"support", after:"single parents returning to the workforce after a long career break.",
+    reveal:[0,1,2,3], def:"지원하다", pos:"v" },
+  { cat:"Environment",
+    before:"Scientists are warning that continued inaction will",
+    word:"accelerate", after:"the rate of climate change and make future mitigation far more costly.",
+    reveal:[0,1,2,3], def:"가속화하다", pos:"v" },
+  { cat:"Career",
+    before:"She had to",
+    word:"demonstrate", after:"her technical expertise and problem-solving skills during a rigorous two-day assessment.",
+    reveal:[0,1,2,3], def:"보여주다, 시연하다", pos:"v" },
+  { cat:"Workplace",
+    before:"The manager took steps to",
+    word:"address", after:"the high turnover rate by improving working conditions and offering more competitive salaries.",
+    reveal:[0,1,2,3], def:"다루다, 해결하다", pos:"v" },
+  { cat:"Education",
+    before:"She was required to",
+    word:"revise", after:"her thesis based on detailed feedback provided by her academic supervisor.",
+    reveal:[0,1,2,3], def:"수정하다, 개정하다", pos:"v" },
+  { cat:"Science",
+    before:"The study attempted to",
+    word:"quantify", after:"the exact impact of air pollution on the average life expectancy of urban residents.",
+    reveal:[0,1,2,3], def:"수량화하다", pos:"v" },
+  { cat:"Finance",
+    before:"The startup failed to",
+    word:"sustain", after:"its rapid growth once the initial wave of investor enthusiasm began to fade.",
+    reveal:[0,1,2,3], def:"지속하다, 유지하다", pos:"v" },
+  { cat:"Society",
+    before:"The policy was introduced to",
+    word:"combat", after:"the growing epidemic of childhood obesity through education and better food labeling.",
+    reveal:[0,1,2], def:"싸우다, 대처하다", pos:"v" },
+  { cat:"Education",
+    before:"The committee will",
+    word:"assess", after:"each candidate based on their academic record, interview performance, and personal statement.",
+    reveal:[0,1,2,3], def:"평가하다", pos:"v" },
+  { cat:"Technology",
+    before:"The algorithm was designed to",
+    word:"optimize", after:"delivery routes and reduce fuel consumption across the entire logistics network.",
+    reveal:[0,1,2,3], def:"최적화하다", pos:"v" },
+  { cat:"Career",
+    before:"She wanted to",
+    word:"specialize", after:"in corporate law because of her passion for complex contract negotiations.",
+    reveal:[0,1,2,3], def:"전문화하다", pos:"v" },
+  { cat:"Society",
+    before:"The investigation revealed evidence of",
+    word:"systematic", after:"discrimination against minority job applicants across multiple departments.",
+    reveal:[0,1,2,3], def:"체계적인", pos:"adj" },
+  { cat:"Environment",
+    before:"Scientists are developing new materials that can",
+    word:"decompose", after:"naturally within weeks rather than taking hundreds of years in a landfill.",
+    reveal:[0,1,2,3], def:"분해되다", pos:"v" },
+  { cat:"Workplace",
+    before:"A manager who can",
+    word:"delegate", after:"effectively allows team members to grow while keeping overall productivity high.",
+    reveal:[0,1,2,3], def:"위임하다", pos:"v" },
+  { cat:"Health",
+    before:"Regular aerobic exercise has been shown to",
+    word:"strengthen", after:"the heart and significantly reduce the long-term risk of cardiovascular disease.",
+    reveal:[0,1,2,3], def:"강화하다", pos:"v" },
+];
+
+
+/* ════════════════════════════════════════════════════════════════
+   STATE
+════════════════════════════════════════════════════════════════ */
+const TOTAL = 10;
+let questions     = [];
+let idx           = 0;
+let score         = 0;
+let results       = [];  // { q, userWord, correct }
+let timerInterval = null;
+let timeLeft      = 20;
+let phase         = 'input'; // 'input' | 'done'
+let autoTimer     = null;
+
+/* ════════════════════════════════════════════════════════════════
+   NAVIGATION
+════════════════════════════════════════════════════════════════ */
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.add('hidden'));
+  document.getElementById(id).classList.remove('hidden');
+}
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function startQuiz() {
+  questions = shuffle(QUESTIONS).slice(0, TOTAL);
+  idx     = 0;
+  score   = 0;
+  results = [];
+  show('quiz');
+  loadQuestion();
+}
+
+/* ════════════════════════════════════════════════════════════════
+   QUESTION RENDERING
+════════════════════════════════════════════════════════════════ */
+function loadQuestion() {
+  clearInterval(timerInterval);
+  clearTimeout(autoTimer);
+  phase = 'input';
+
+  const q = questions[idx];
+  document.getElementById('q-counter').textContent = `${idx + 1} / ${TOTAL}`;
+
+  // reset action button
+  const btn = document.getElementById('btn-action');
+  btn.textContent = idx === TOTAL - 1 ? '제출 →' : '다음 →';
+  btn.disabled = false;
+  btn.style.background = '';
+
+  // build word boxes
+  const letters = q.word.split('');
+  const wLen    = letters.length;
+  const szClass = wLen > 10 ? 'sz-sm' : wLen > 7 ? 'sz-md' : '';
+
+  const wordHtml = letters.map((ch, i) => {
+    if (q.reveal.includes(i)) {
+      return `<span class="lbox revealed">${ch}</span>`;
+    }
+    return `<input class="lbox" type="text" maxlength="1" data-pos="${i}"
+      autocomplete="off" autocorrect="off" autocapitalize="off"
+      spellcheck="false" inputmode="text" />`;
+  }).join('');
+
+  const posHint = q.pos ? `<span class="pos-hint">${q.pos}</span>` : '';
+  document.getElementById('sentence-card').innerHTML = `
+    <div class="cat-label">${esc(q.cat)}${posHint}</div>
+    <p class="sentence-text">
+      ${esc(q.before)}<span class="word-wrap ${szClass}">${wordHtml}</span>${esc(q.after)}
+    </p>`;
+
+  setupInputs();
+  startTimer();
+
+  // focus first blank
+  setTimeout(() => {
+    document.querySelector('input.lbox')?.focus();
+  }, 80);
+}
+
+function esc(s) {
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function setupInputs() {
+  const inputs = [...document.querySelectorAll('input.lbox')];
+  inputs.forEach((inp, i) => {
+    inp.addEventListener('keydown', e => {
+      if (e.key === 'Backspace' && !inp.value && i > 0) {
+        e.preventDefault();
+        inputs[i - 1].focus();
+        inputs[i - 1].value = '';
+      } else if (e.key === 'Enter') {
+        handleAction();
+      }
+    });
+    inp.addEventListener('input', () => {
+      // keep only single lowercase letter
+      inp.value = inp.value.replace(/[^a-zA-Z]/g, '').toLowerCase().slice(-1);
+      if (inp.value && i < inputs.length - 1) inputs[i + 1].focus();
+    });
+  });
+}
+
+/* ════════════════════════════════════════════════════════════════
+   TIMER
+════════════════════════════════════════════════════════════════ */
+function startTimer() {
+  timeLeft = 20;
+  updateTimerUI();
+  timerInterval = setInterval(() => {
+    timeLeft--;
+    updateTimerUI();
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      recordAndAdvance();
+    }
+  }, 1000);
+}
+
+function updateTimerUI() {
+  const el  = document.getElementById('q-timer');
+  const bar = document.getElementById('q-bar');
+  el.textContent = timeLeft;
+  el.classList.toggle('urgent', timeLeft <= 5);
+  bar.style.width      = (timeLeft / 20 * 100) + '%';
+  bar.style.background = timeLeft <= 5 ? 'var(--red)' : 'var(--orange)';
+}
+
+/* ════════════════════════════════════════════════════════════════
+   ANSWER RECORD & ADVANCE
+════════════════════════════════════════════════════════════════ */
+function handleAction() {
+  if (phase === 'input') recordAndAdvance();
+}
+
+function recordAndAdvance() {
+  if (phase !== 'input') return;
+  phase = 'done';
+  clearInterval(timerInterval);
+  clearTimeout(autoTimer);
+
+  const q      = questions[idx];
+  const inputs = [...document.querySelectorAll('input.lbox')];
+  const letters = q.word.split('');
+
+  // collect user's typed letters
+  let userWord = '';
+  letters.forEach((ch, i) => {
+    if (q.reveal.includes(i)) {
+      userWord += ch;
+    } else {
+      const inp = inputs.find(el => +el.dataset.pos === i);
+      userWord += inp ? (inp.value.toLowerCase() || '_') : '_';
+    }
+  });
+
+  const correct = userWord === q.word;
+  if (correct) score++;
+  results.push({ q, userWord, correct });
+
+  idx++;
+  if (idx >= TOTAL) showReview();
+  else loadQuestion();
+}
+
+/* ════════════════════════════════════════════════════════════════
+   REVIEW SCREEN
+════════════════════════════════════════════════════════════════ */
+function showReview() {
+  show('review');
+  const pct = Math.round(score / TOTAL * 100);
+
+  const emoji =
+    pct >= 90 ? '🏆' :
+    pct >= 70 ? '🎉' :
+    pct >= 50 ? '💪' : '📖';
+
+  document.getElementById('rv-emoji').textContent = emoji + ' 결과';
+  document.getElementById('rv-pct').textContent   = pct + '%';
+  document.getElementById('rv-score').textContent = `${score} / ${TOTAL} 정답`;
+
+  const list = document.getElementById('rv-list');
+  list.innerHTML = results.map((r, i) => {
+    const q   = r.q;
+    const cls = r.correct ? 'rv-ok' : 'rv-ng';
+    const tag = r.correct ? '✓ 정답' : '✗ 오답';
+
+    // build sentence with the complete word highlighted
+    const wordSpan = `<span class="ans-word" style="background:${r.correct ? '#D1FAE5' : '#FEE2E2'}">${q.word}</span>`;
+    const sentence = `${esc(q.before)} ${wordSpan} ${esc(q.after)}`;
+
+    const posLabel = q.pos ? `<span class="rv-pos">${q.pos}</span>` : '';
+    const defLine  = q.def  ? `<div class="rv-def">${posLabel}${esc(q.def)}</div>` : '';
+
+    const answerLine = r.correct
+      ? `<div class="rv-answer">✓ 정답: <strong>${q.word}</strong></div>`
+      : `<div class="rv-answer">✗ 내 답: <strong>${r.userWord}</strong> &nbsp;→&nbsp; 정답: <strong>${q.word}</strong></div>`;
+
+    return `
+      <div class="rv-card ${cls}">
+        <div class="rv-num">${tag} &nbsp;·&nbsp; ${esc(q.cat)} &nbsp;·&nbsp; Q${i + 1}</div>
+        <div class="rv-sentence">${sentence}</div>
+        ${answerLine}
+        ${defLine}
+      </div>`;
+  }).join('');
+}
+</script>
+</body>
+</html>

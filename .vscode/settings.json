@@ -1,0 +1,9 @@
+{
+  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/Scripts/python.exe",
+  "python.terminal.activateEnvironment": true,
+  "python.terminal.activateEnvInCurrentTerminal": true,
+  "terminal.integrated.defaultLocation": "editor",
+  "chat.agent.maxRequests": 200,
+  "github.copilot.chat.agent.runTasks": true,
+  "chat.tools.autoApprove": true
+}
